@@ -1,7 +1,14 @@
 %{
 #include <stdio.h>
-#include "../buffend.h"
-#include "parser.h"
+#ifndef FMACROS
+   #include "../macros.h"
+#endif
+#ifndef FTYPES
+   #include "../types.h"
+#endif
+#ifndef FPARSER
+   #include "parser.h"
+#endif
 #include "y.tab.h"
 #define YY_NO_INPUT
 %}
@@ -27,6 +34,7 @@
 (?i:REFERENCES)					return REFERENCES;
 (?i:DATABASE)					return DATABASE;
 (?i:DROP)						return DROP;
+(?i:CONTRIBUTORS)               return CONTR;
 help							return HELP;
 [\\][h]							return HELP;
 [\\][h]+[^\n]*					{invalidCommand(yytext);};

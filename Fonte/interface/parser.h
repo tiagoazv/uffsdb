@@ -1,3 +1,5 @@
+#define FPARSER 1
+////
 /* FUNÇÕES AUXILIARES DO INTERPRETADOR DE COMANDOS (yacc + lex)
  * O yacc vai chamando essas funções conforme vai identificando os tokens.
  * Essas funcções irão preencher uma estrutura, ou parte dela, e chamarão

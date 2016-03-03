@@ -3,8 +3,27 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#include "../buffend.h"
-#include "parser.h"
+#ifndef FMACROS
+   #include "../macros.h"
+#endif
+#ifndef FTYPES
+   #include "../types.h"
+#endif
+#ifndef FMISC
+   #include "../misc.h"
+#endif
+#ifndef FDICTIONARY
+   #include "../dictionary.h"
+#endif
+#ifndef FSQLCOMMANDS
+   #include "../sqlcommands.h"
+#endif
+#ifndef FDATABASE
+   #include "../database.h"
+#endif
+#ifndef FPARSER
+   #include "parser.h"
+#endif
 
 extern char* yytext[];
 extern FILE * yyin;
@@ -30,11 +49,11 @@ int yywrap() {
         CHAR        PRIMARY     KEY         REFERENCES  DATABASE
         DROP        OBJECT      NUMBER      VALUE       QUIT
         LIST_TABLES LIST_TABLE  ALPHANUM    CONNECT     HELP
-        LIST_DBASES CLEAR;
+        LIST_DBASES CLEAR       CONTR;
 
 start: insert | select | create_table | create_database | drop_table | drop_database
      | table_attr | list_tables | connection | exit_program | semicolon {GLOBAL_PARSER.consoleFlag = 1; return 0;}
-     | parentesis_open | parentesis_close| help_pls | list_databases | clear
+     | parentesis_open | parentesis_close| help_pls | list_databases | clear | contributors
      | qualquer_coisa | /*nothing*/;
 
 /*--------------------------------------------------*/
@@ -84,6 +103,9 @@ list_databases: LIST_DBASES {
 
 /* HELP */
 help_pls: HELP {help(); GLOBAL_PARSER.consoleFlag = 1; return 0;}
+
+/* CONTRIBUTORS */
+contributors: CONTR {contr(); GLOBAL_PARSER.consoleFlag = 1; return 0;}
 
 /*--------------------------------------------------*/
 /****************** SQL STATEMENTS ******************/

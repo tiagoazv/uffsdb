@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 ////
 #ifndef FMACROS // garante que macros.h não seja reincluída
    #include "macros.h"
@@ -75,7 +77,7 @@ void createDB(char *db_name) {
         if(objcmp(vec_name[i], db_name) == 0) {
         	if(valid) {
 	        	fclose(DB);
-				if(objcmp(db_name, "ibetres") != 0) 			// banco de dados ja existe
+				if(objcmp(db_name, "uffsdb") != 0) 			// banco de dados ja existe
 	        		printf("ERROR: database already exists\n");
 	            return;
 	        }
@@ -119,7 +121,7 @@ void createDB(char *db_name) {
     free(SGBD);
 
 
-    if(objcmp(db_name, "ibetres") != 0)
+    if(objcmp(db_name, "uffsdb") != 0)
         printf("CREATE DATABASE\n");
 }
 
@@ -195,7 +197,7 @@ void showDB() {
         fread(vec_directory[i] 	,sizeof(char), LEN_DB_NAME, DB);
 
        	if(valid) {
-       		printf("%-20s| Ibetres  | UTF8     | pt_BR.UTF-8 | pt_BR.UTF-8 | \n", vec_name[i]);
+       		printf("%-20s| uffsdb  | UTF8     | pt_BR.UTF-8 | pt_BR.UTF-8 | \n", vec_name[i]);
        		qtdDB++;
         }
     }
@@ -204,9 +206,17 @@ void showDB() {
     fclose(DB);
 }
 ///
-void dbInit() {
+void dbInit(char *db) {
+	char *name;
 	if(system("mkdir data > /dev/null 2>&1") == -1)
-		printf("ERROR: It was not possible to initialize ibtres\n");;
-	createDB("ibetres");
+		printf("ERROR: It was not possible to initialize uffsdb\n");
+    if (db==NULL)
+    {
+		name=(char *)malloc(sizeof(char)*7);
+		name[0]='u';name[1]='f';name[2]='f';name[3]='s';
+		name[4]='d';name[5]='b';name[6]=0;
+    } else name=db;
+    
+	createDB(name);
 }
 

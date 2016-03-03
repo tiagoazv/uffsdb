@@ -1,7 +1,25 @@
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <pthread.h>
-#include "../buffend.h"
-#include "parser.h"
+#ifndef FMACROS
+   #include "../macros.h"
+#endif
+#ifndef FTYPES
+   #include "../types.h"
+#endif
+#ifndef FMISC
+   #include "../misc.h"
+#endif
+#ifndef FDATABASE
+   #include "../database.h"
+#endif
+#ifndef FSQLCOMMANDS
+   #include "../sqlcommands.h"
+#endif
+#ifndef FPARSER
+   #include "parser.h"
+#endif
 
 /* Estrutura global que guarda as informações obtidas pelo yacc
  * na identificação dos tokens
@@ -21,7 +39,7 @@ void connect(char *nome) {
         strcpylower(connected.db_name, nome);
 
         connected.conn_active = 1;
-        printf("You are now connected to database \"%s\" as user \"Ibetres\".\n", nome);
+        printf("You are now connected to database \"%s\" as user \"uffsdb\".\n", nome);
     } else {
     	printf("ERROR: Failed to establish connection with database named \"%s\". (Error code: %d)\n", nome, r);
     }
@@ -193,7 +211,7 @@ int interface() {
     pthread_create(&pth, NULL, (void*)clearGlobalStructs, NULL);
     pthread_join(pth, NULL);
 
-    connect("ibetres"); // conecta automaticamente no banco padrão
+    connect("uffsdb"); // conecta automaticamente no banco padrão
 
     while(1){
         if (!connected.conn_active) {
