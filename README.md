@@ -10,4 +10,4 @@ A simple teaching DBMS
 # compiler
  uffsdb commands are interpreted using `yacc` and `lex`.
  In the `interface` folder type `make` to compile both.
- You can edit the following files: `parser.h`, `parser.c`, `lex.l` and `yacc.y`.
+ You can edit the following files: `parser.h`, `parser.c`, `lex.l`, and `yacc.y`.
