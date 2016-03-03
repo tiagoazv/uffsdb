@@ -1,4 +1,16 @@
-#include "buffend.h"
+#include <stdio.h>
+////
+#ifndef FMACROS // garante que macros.h não seja reincluída
+   #include "macros.h"
+#endif
+///
+#ifndef FTYPES // garante que types.h não seja reincluída
+  #include "types.h"
+#endif
+////
+#ifndef FMISC // garante que misc.h não seja reincluída
+  #include "misc.h"
+#endif
 
 char connectDB(char *db_name) {
 	FILE *DB;
@@ -191,3 +203,10 @@ void showDB() {
     printf("(%d %s)\n\n\n\n", qtdDB, (1 >= qtdDB)? "row": "rows");
     fclose(DB);
 }
+///
+void dbInit() {
+	if(system("mkdir data > /dev/null 2>&1") == -1)
+		printf("ERROR: It was not possible to initialize ibtres\n");;
+	createDB("ibetres");
+}
+
