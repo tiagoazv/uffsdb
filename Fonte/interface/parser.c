@@ -8,6 +8,9 @@
 #ifndef FTYPES
    #include "../types.h"
 #endif
+#ifndef FUTILITY
+   #include "../Utility.h"
+#endif
 #ifndef FMISC
    #include "../misc.h"
 #endif
@@ -26,23 +29,26 @@
  */
 rc_insert GLOBAL_DATA;
 
+/*
+  Informações da operação select.
+*/
+inf_select SELECT;
+
 /* Estrutura auxiliar do reconhecedor.
  */
 rc_parser GLOBAL_PARSER;
 
 void connect(char *nome) {
-    int r;
-    r = connectDB(nome);
+  int r = connectDB(nome);
 	if (r == SUCCESS) {
-        connected.db_name = malloc(sizeof(char)*((strlen(nome)+1)));
-
-        strcpylower(connected.db_name, nome);
-
-        connected.conn_active = 1;
-        printf("You are now connected to database \"%s\" as user \"uffsdb\".\n", nome);
-    } else {
-    	printf("ERROR: Failed to establish connection with database named \"%s\". (Error code: %d)\n", nome, r);
-    }
+    connected.db_name = malloc(sizeof(char)*((strlen(nome)+1)));
+    strcpylower(connected.db_name, nome);
+    connected.conn_active = 1;
+    printf("You are now connected to database \"%s\" as user \"uffsdb\".\n", nome);
+  }
+  else {
+  	printf("ERROR: Failed to establish connection with database named \"%s\". (Error code: %d)\n", nome, r);
+  }
 }
 
 void invalidCommand(char *command) {
@@ -53,15 +59,34 @@ void notConnected() {
     printf("ERROR: you are not connected to any database.\n");
 }
 
+void adcTabelaSelect(char *nome){
+  SELECT.tabela = malloc(strlen(nome)*sizeof(char));
+  strcpy(SELECT.tabela,nome);
+}
+
+int cmpSelect(void *a,void *b){
+  return strcmp((char *)a,(char *)b);
+}
+
+void adcTokenWhere(char *token,int id){
+  if(!SELECT.tok) SELECT.tok = novaLista(&cmpSelect);
+  adcNodo(SELECT.tok, SELECT.tok->ult, (void *)novoTokenWhere(token,id));
+}
+
+void adcProjSelect(char *col){
+  char *str = malloc(sizeof(char)*strlen(col));
+  strcpy(str,col);
+  if(!SELECT.proj) SELECT.proj = novaLista(NULL);
+  adcNodo(SELECT.proj, SELECT.proj->ult, (void *)str);
+}
+
 void setObjName(char **nome) {
     if (GLOBAL_PARSER.mode != 0) {
         GLOBAL_DATA.objName = malloc(sizeof(char)*((strlen(*nome)+1)));
-
         strcpylower(GLOBAL_DATA.objName, *nome);
         GLOBAL_DATA.objName[strlen(*nome)] = '\0';
         GLOBAL_PARSER.step++;
-    } else
-        return;
+    }
 }
 
 void setColumnInsert(char **nome) {
@@ -119,15 +144,15 @@ void setColumnCreate(char **nome) {
     GLOBAL_PARSER.step = 2;
 }
 
-void setColumnTypeCreate(char type) {
+void setColumnTypeCreate(char type){
     GLOBAL_DATA.type[GLOBAL_PARSER.col_count-1] = type;
     GLOBAL_PARSER.step++;
 }
 
-void setColumnSizeCreate(char *size) {
-    GLOBAL_DATA.values[GLOBAL_PARSER.col_count-1] = realloc(GLOBAL_DATA.values[GLOBAL_PARSER.col_count-1], sizeof(char)*(strlen(size)+1));
-    strcpy(GLOBAL_DATA.values[GLOBAL_PARSER.col_count-1], size);
-    GLOBAL_DATA.values[GLOBAL_PARSER.col_count-1][strlen(size)-1] = '\0';
+void setColumnSizeCreate(char *size){
+  GLOBAL_DATA.values[GLOBAL_PARSER.col_count-1] = realloc(GLOBAL_DATA.values[GLOBAL_PARSER.col_count-1], sizeof(char)*(strlen(size)+1));
+  strcpy(GLOBAL_DATA.values[GLOBAL_PARSER.col_count-1], size);
+  GLOBAL_DATA.values[GLOBAL_PARSER.col_count-1][strlen(size)] = '\0';
 }
 
 void setColumnPKCreate() {
@@ -149,10 +174,31 @@ void setColumnFKColumnCreate(char **nome) {
     GLOBAL_PARSER.step++;
 }
 
+void limparLista(Lista *l){
+  Nodo *k = l->prim,*j;
+  while(k){
+    j = k->prox;
+    free( rmvNodoPtr(l,k) );
+    k = j;
+  }
+  l->prim = l->ult = NULL;
+  free(l);
+}
+
+void resetSelect(){
+  if(SELECT.tabela){
+    free(SELECT.tabela);
+    SELECT.tabela = NULL;
+  }
+  if(SELECT.tok) limparLista(SELECT.tok);
+  SELECT.tok = NULL;
+  if(SELECT.proj) limparLista(SELECT.proj);
+  SELECT.proj = NULL;
+}
 
 void clearGlobalStructs() {
     int i;
-
+    resetSelect();
     if (GLOBAL_DATA.objName) {
         free(GLOBAL_DATA.objName);
         GLOBAL_DATA.objName = NULL;
@@ -204,15 +250,14 @@ void setMode(char mode) {
     GLOBAL_PARSER.step++;
 }
 
-
 int interface() {
     pthread_t pth;
 
     pthread_create(&pth, NULL, (void*)clearGlobalStructs, NULL);
     pthread_join(pth, NULL);
-
+    Lista *resultado;
     connect("uffsdb"); // conecta automaticamente no banco padrão
-
+    SELECT.tok = SELECT.proj = NULL;
     while(1){
         if (!connected.conn_active) {
             printf(">");
@@ -236,8 +281,12 @@ int interface() {
                             else
                                 printf("WARNING: Nothing to be inserted. Command ignored.\n");
                             break;
-                        case OP_SELECT_ALL:
-                            imprime(GLOBAL_DATA.objName);
+                        case OP_SELECT:
+                            resultado = op_select(&SELECT);
+                            if(resultado){
+                              printConsulta(SELECT.proj,resultado);                            
+                              resultado = NULL;
+                            }
                             break;
                         case OP_CREATE_TABLE:
                             createTable(&GLOBAL_DATA);
@@ -263,7 +312,7 @@ int interface() {
                 case OP_DROP_DATABASE:
                 case OP_CREATE_TABLE:
                 case OP_DROP_TABLE:
-                case OP_SELECT_ALL:
+                case OP_SELECT:
                 case OP_INSERT:
                     if (GLOBAL_PARSER.step == 1) {
                         GLOBAL_PARSER.consoleFlag = 0;
@@ -299,14 +348,14 @@ int interface() {
 }
 
 void yyerror(char *s, ...) {
-    GLOBAL_PARSER.noerror = 0;
-    /*extern yylineno;
+  GLOBAL_PARSER.noerror = 0;
+  /*extern yylineno;
 
-    va_list ap;
-    va_start(ap, s);
+  va_list ap;
+  va_start(ap, s);
 
-    fprintf(stderr, "%d: error: ", yylineno);
-    vfprintf(stderr, s, ap);
-    fprintf(stderr, "\n");
-    */
+  fprintf(stderr, "%d: error: ", yylineno);
+  vfprintf(stderr, s, ap);
+  fprintf(stderr, "\n");
+  */
 }

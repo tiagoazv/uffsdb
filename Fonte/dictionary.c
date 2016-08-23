@@ -30,7 +30,7 @@
 
 int existeArquivo(const char* filename){
 
-    char directory[LEN_DB_NAME*2];
+    char directory[LEN_DB_NAME_IO];
     strcpy(directory, connected.db_directory);
     strcat(directory, filename);
     FILE* fptr = fopen(directory, "r");
@@ -98,11 +98,12 @@ int existeAtributo(char *nomeTabela, column *c){
 }
 //////
 int verificaNomeTabela(char *nomeTabela) {
+    if(strlen(nomeTabela) > TAMANHO_NOME_TABELA) return 0;
 
     FILE *dicionario;
     char *tupla = (char *)malloc(sizeof(char)*TAMANHO_NOME_TABELA);
 
-    char directory[LEN_DB_NAME*2];
+    char directory[LEN_DB_NAME_IO];
     strcpy(directory, connected.db_directory);
     strcat(directory, "fs_object.dat");
 
@@ -137,7 +138,7 @@ int quantidadeTabelas(){
     FILE *dicionario;
     int codTbl = 0;
 
-    char directory[LEN_DB_NAME*2];
+    char directory[LEN_DB_NAME_IO];
     strcpy(directory, connected.db_directory);
     strcat(directory, "fs_object.dat");
 
@@ -156,46 +157,30 @@ int quantidadeTabelas(){
 
     return codTbl;
 }
+
 ////
 int retornaTamanhoValorCampo(char *nomeCampo, table  *tab) {
-
-    int tam = 0;
-
-    tp_table *temp = tab->esquema;
-
-    while(temp != NULL) {
-
-       if (objcmp(nomeCampo,temp->nome) == 0) {
-            tam = temp->tam;
-
-            return tam;
-       }
-
-       temp = temp->next;
+  int tam = 0;
+  tp_table *temp = tab->esquema;
+  while(temp != NULL) {
+    if (objcmp(nomeCampo,temp->nome) == 0) {
+      tam = temp->tam;
+      return tam;
     }
-
-    return tam;
+    temp = temp->next;
+  }
+  return 0;
 }
+
 ////
-
 char retornaTamanhoTipoDoCampo(char *nomeCampo, table  *tab) {
-
-    char tipo = 0;
-
-    tp_table *temp = tab->esquema;
-
-    while(temp != NULL) {
-
-       if (objcmp(nomeCampo,temp->nome) == 0) {
-            tipo = temp->tipo;
-
-            return tipo;
-       }
-
-       temp = temp->next;
-    }
-
-    return tipo;
+  char tipo = 0;
+  tp_table *temp = tab->esquema;
+  while(temp != NULL) {
+    if (objcmp(nomeCampo,temp->nome) == 0) return temp->tipo;
+    temp = temp->next;
+  }
+  return tipo;
 }
 ////
 /* ----------------------------------------------------------------------------------------------
@@ -213,16 +198,16 @@ tp_table *procuraAtributoFK(struct fs_objects objeto){
     memset(vetEsqm, 0, sizeof(tp_table)*objeto.qtdCampos);
     memset(esquema, 0, sizeof(tp_table)*objeto.qtdCampos);
 
-    char directory[LEN_DB_NAME*2];
+    char directory[LEN_DB_NAME_IO];
     strcpy(directory, connected.db_directory);
     strcat(directory, "fs_schema.dat");
 
     if((schema = fopen(directory, "a+b")) == NULL){
-        printf("ERROR: could not read schema.\n");
-        free(tupla);
-		free(esquema);
-		free(vetEsqm);
-        return ERRO_ABRIR_ESQUEMA;
+      printf("ERROR: could not read schema.\n");
+      free(tupla);
+		  free(esquema);
+		  free(vetEsqm);
+      return ERRO_ABRIR_ESQUEMA;
     }
 
     while((fgetc (schema) != EOF) && i < objeto.qtdCampos){ // Varre o arquivo ate encontrar todos os campos com o codigo da tabela.
@@ -279,7 +264,7 @@ int procuraObjectArquivo(char *nomeTabela){
     char *table = (char *)malloc(sizeof(char) * tamanhoTotal);
     FILE *dicionario, *fp;
 
-    char directory[LEN_DB_NAME*2];
+    char directory[LEN_DB_NAME_IO];
     strcpy(directory, connected.db_directory);
     strcat(directory, "fs_object.dat");
 
@@ -316,7 +301,7 @@ int procuraObjectArquivo(char *nomeTabela){
     fclose(fp);
     fclose(dicionario);
 
-    char directoryex[LEN_DB_NAME*4];
+    char directoryex[LEN_DB_NAME_IO*2];
     strcpy(directoryex, connected.db_directory);
     strcat(directoryex, "fs_object.dat");
 
@@ -341,7 +326,7 @@ struct fs_objects leObjeto(char *nTabela){
     memset(tupla, '\0', TAMANHO_NOME_TABELA);
     int cod;
 
-    char directory[LEN_DB_NAME*2];
+    char directory[LEN_DB_NAME_IO];
     strcpy(directory, connected.db_directory);
     strcat(directory, "fs_object.dat");
 
@@ -402,10 +387,7 @@ tp_table *leSchema (struct fs_objects objeto){
 
     tp_table *esquema = (tp_table *)malloc(sizeof(tp_table)*(objeto.qtdCampos+1)); // Aloca esquema com a quantidade de campos necessarios.
     memset(esquema, 0, (objeto.qtdCampos+1)*sizeof(tp_table));
-    for (i = 0; i < objeto.qtdCampos+1; i++) {
-        esquema[i].next = NULL;
-    }
-
+    for (i = 0; i < objeto.qtdCampos+1; i++)  esquema[i].next = NULL;
 
     i = 0;
     if(esquema == NULL){
@@ -414,7 +396,7 @@ tp_table *leSchema (struct fs_objects objeto){
         return ERRO_DE_ALOCACAO;
     }
 
-    char directory[LEN_DB_NAME*2];
+    char directory[LEN_DB_NAME_IO];
     strcpy(directory, connected.db_directory);
     strcat(directory, "fs_schema.dat");
 
@@ -432,7 +414,6 @@ tp_table *leSchema (struct fs_objects objeto){
 
         if(fread(&cod, sizeof(int), 1, schema)){ // Le o codigo da tabela.
             if(cod == objeto.cod){ // Verifica se o campo a ser copiado e da tabela que esta na estrutura fs_objects.
-
                 fread(tupla, sizeof(char), TAMANHO_NOME_CAMPO, schema);
                 strcpylower(esquema[i].nome,tupla);                  // Copia dados do campo para o esquema.
 
@@ -446,11 +427,10 @@ tp_table *leSchema (struct fs_objects objeto){
                 fread(tupla, sizeof(char), TAMANHO_NOME_CAMPO, schema);
                 strcpylower(esquema[i].attApt,tupla);
 
-                if (i > 0)
-                    esquema[i-1].next = &esquema[i];
-
+                if (i > 0) esquema[i-1].next = &esquema[i];
                 i++;
-            } else {
+            }
+            else {
                 fseek(schema, 109, 1); // Pula a quantidade de caracteres para a proxima verificacao (40B do nome, 1B do tipo e 4B do tamanho,4B da chave, 20B do nome da Tabela Apontada e 40B do atributo apontado).
             }
         }
@@ -460,7 +440,6 @@ tp_table *leSchema (struct fs_objects objeto){
     free(tupla);
     free(tuplaT);
     fclose(schema);
-
     return esquema;
 }
 ////
@@ -494,56 +473,41 @@ table *iniciaTabela(char *nome){
 ////
 table *adicionaCampo(table *t,char *nomeCampo, char tipoCampo, int tamanhoCampo, int tChave, char *tabelaApt, char *attApt){
     tp_table *e = NULL;
-
-    if(t == NULL) // Se a estrutura passada for nula, retorna erro.
-        return ERRO_ESTRUTURA_TABELA_NULA;
+     // Se a estrutura passada for nula, retorna erro.
+    if(t == NULL) return ERRO_ESTRUTURA_TABELA_NULA;
     tp_table *aux;
     if(t->esquema == NULL){ // Se o campo for o primeiro a ser adicionado, adiciona campo no esquema.
+      e = (tp_table *)malloc(sizeof(tp_table));
+      memset(e, 0, sizeof(tp_table));
+      if (e == NULL) return ERRO_DE_ALOCACAO;
 
+      e->next = NULL;
+      int n = strlen(nomeCampo)+1;
+      if (n > TAMANHO_NOME_CAMPO) n = TAMANHO_NOME_CAMPO;
 
-        e = (tp_table *)malloc(sizeof(tp_table));
-        memset(e, 0, sizeof(tp_table));
-        if (e == NULL) {
-            return ERRO_DE_ALOCACAO;
-        }
-        e->next = NULL;
-        int n = strlen(nomeCampo)+1;
+      strncpylower(e->nome, nomeCampo,n); // Copia nome do campo passado para o esquema
+      e->tipo = tipoCampo; // Copia tipo do campo passado para o esquema
+      e->tam = tamanhoCampo; // Copia tamanho do campo passado para o esquema
+      e->chave = tChave; // Copia tipo de chave passado para o esquema
 
-        if (n > TAMANHO_NOME_CAMPO) {
-            n = TAMANHO_NOME_CAMPO;
-        }
+      if(strlen(tabelaApt) >= 1)
+          strcpylower(e->tabelaApt, tabelaApt); //Copia a Tabela Refenciada da FK de chave passado para o esquema;
 
-        strncpylower(e->nome, nomeCampo,n); // Copia nome do campo passado para o esquema
-        e->tipo = tipoCampo; // Copia tipo do campo passado para o esquema
-        e->tam = tamanhoCampo; // Copia tamanho do campo passado para o esquema
-        e->chave = tChave; // Copia tipo de chave passado para o esquema
+      if(strlen(attApt) >= 1)
+          strcpylower(e->attApt, attApt); //Copia o Atributo Refenciado da FK de chave passado para o esquema
 
-        if(strlen(tabelaApt) >= 1)
-            strcpylower(e->tabelaApt, tabelaApt); //Copia a Tabela Refenciada da FK de chave passado para o esquema;
-
-        if(strlen(attApt) >= 1)
-            strcpylower(e->attApt, attApt); //Copia o Atributo Refenciado da FK de chave passado para o esquema
-
-        t->esquema = e;
-
-        return t; // Retorna a estrutura
-    } else {
+      t->esquema = e;
+      return t; // Retorna a estrutura
+    }
+    else {
         for(aux = t->esquema; aux != NULL; aux = aux->next){ // Anda até o final da estrutura de campos.
             if(aux->next == NULL){ // Adiciona um campo no final.
                 e = (tp_table *)malloc(sizeof(tp_table));
                 memset(e, 0, sizeof(*e));
-
-                if (e == NULL) {
-                    return ERRO_DE_ALOCACAO;
-                }
-
+                if (e == NULL) return ERRO_DE_ALOCACAO;
                 e->next = NULL;
-
                 int n = strlen(nomeCampo)+1;
-
-                if (n > TAMANHO_NOME_CAMPO) {
-                    n = TAMANHO_NOME_CAMPO;
-                }
+                if (n > TAMANHO_NOME_CAMPO) n = TAMANHO_NOME_CAMPO;
 
                 strncpylower(e->nome, nomeCampo,n); // Copia nome do campo passado para o esquema
                 e->tipo = tipoCampo; // Copia tipo do campo passado para o esquema
@@ -573,7 +537,7 @@ int finalizaTabela(table *t){
     char nomeArquivo[TAMANHO_NOME_ARQUIVO];
     memset(nomeArquivo, 0, TAMANHO_NOME_ARQUIVO);
 
-    char directory[LEN_DB_NAME*2];
+    char directory[LEN_DB_NAME_IO];
     strcpy(directory, connected.db_directory);
     strcat(directory, "fs_schema.dat");
 
@@ -617,36 +581,23 @@ int finalizaTabela(table *t){
 // INSERE NA TABELA
 column *insereValor(table  *tab, column *c, char *nomeCampo, char *valorCampo) {
     int i;
-
     column *aux;
     column *e = NULL;
-
     if(c == NULL){ // Se o valor a ser inserido é o primeiro, adiciona primeiro campo.
-
         e = (column *)malloc(sizeof(column));
-
-        if (e == NULL)    {
-            return ERRO_DE_ALOCACAO;
-        }
-
+        if (e == NULL) return ERRO_DE_ALOCACAO;
         memset(e, 0, sizeof(column));
-
         int tam = retornaTamanhoValorCampo(nomeCampo, tab);
         char tipo = retornaTamanhoTipoDoCampo(nomeCampo,tab);
-
         int nTam = strlen(valorCampo);
-
         if (tipo == 'S') {
             nTam = tam;
         }
-
         e->valorCampo = (char *)malloc(sizeof(char) * (nTam+1));
-
         if (e->valorCampo == NULL) {
             free(e);
             return ERRO_DE_ALOCACAO;
         }
-
         int n = strlen(nomeCampo)+1;
 
         /**
@@ -656,12 +607,8 @@ column *insereValor(table  *tab, column *c, char *nomeCampo, char *valorCampo) {
            n = TAMANHO_NOME_CAMPO;
            printf("WARNING: field name exceeded the size limit and was truncated.\n");
         }
-
-
         strncpylower(e->nomeCampo, nomeCampo, n-1);
-
         n = strlen(valorCampo);
-
         if (n > tam && tipo == 'S') {
             n = tam;
             printf("WARNING: value of column \"%s\" exceeded the size limit and was truncated.\n", nomeCampo);
@@ -671,7 +618,6 @@ column *insereValor(table  *tab, column *c, char *nomeCampo, char *valorCampo) {
             e->valorCampo[i] = '\0';
 
         //strncpy(e->valorCampo, valorCampo,n);
-
         e->next = NULL;
         c = e;
         return c;
@@ -750,7 +696,7 @@ void printTable(char *tbl){
 		printf("		List of Relations\n");
 		char *tupla = (char *)malloc(sizeof(char)*TAMANHO_NOME_TABELA);
 
-		char directory[LEN_DB_NAME*2];
+		char directory[LEN_DB_NAME_IO];
     	strcpy(directory, connected.db_directory);
     	strcat(directory, "fs_object.dat");
 
@@ -766,7 +712,7 @@ void printTable(char *tbl){
 		while(fgetc (dicionario) != EOF){
 			fseek(dicionario, -1, 1);
 			fread(tupla, sizeof(char), TAMANHO_NOME_TABELA, dicionario);
-			printf(" %-10s | %-15s | %-10s | %-10s\n", "public", tupla, "tuple", "ibetres");
+			printf(" %-10s | %-15s | %-10s | %-10s \n", "public", tupla, "tuple", connected.db_name);
 			fseek(dicionario, 28, 1);
 			i++;
 		}
@@ -888,4 +834,3 @@ void freeColumn(column *colunas) {
 		free(colunas);
 	}
 }
-

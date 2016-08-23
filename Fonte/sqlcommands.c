@@ -22,7 +22,10 @@
   #include "dictionary.h"
 #endif
 
-/* ---------------------------------------------------------------------------------------------- 
+#ifndef FEXPRESSAO
+  #include "Expressao.h"
+#endif
+/* ----------------------------------------------------------------------------------------------
     Objetivo:   Recebe o nome de uma tabela e engloba as funções leObjeto() e leSchema().
     Parametros: Nome da Tabela, Objeto da Tabela e tabela.
     Retorno:    tp_table
@@ -61,39 +64,25 @@ int typesCompatible(char table_type, char insert_type) {
 // Se não existe em *s_insert, assume o tipo do esquema já que não receberá nada.
 char getInsertedType(rc_insert *s_insert, char *columnName, table *tabela) {
 	int i;
-	char noValue;
-	for (i = 0; i < s_insert->N; i++) {
-		if (objcmp(s_insert->columnName[i], columnName) == 0) {
+	for (i = 0; i < s_insert->N; i++)
+		if (objcmp(s_insert->columnName[i], columnName) == 0)
 			return s_insert->type[i];
-		}
-	}
-
-	noValue = retornaTamanhoTipoDoCampo(columnName, tabela);
-
-	return noValue;
+	return retornaTamanhoTipoDoCampo(columnName, tabela);;
 }
 // Busca o valor na inserção *s_insert designado à *columnName.
 // Se não existe, retorna 0, 0.0 ou \0
 char *getInsertedValue(rc_insert *s_insert, char *columnName, table *tabela) {
 	int i;
 	char tipo, *noValue;
-
-	for (i = 0; i < s_insert->N; i++) {
-		if (objcmp(s_insert->columnName[i], columnName) == 0) {
+	for (i = 0; i < s_insert->N; i++)
+		if (objcmp(s_insert->columnName[i], columnName) == 0)
 			return s_insert->values[i];
-		}
-	}
 
 	tipo = retornaTamanhoTipoDoCampo(columnName, tabela);
 	noValue = (char *)malloc(sizeof(char)*3);
-
-	if (tipo == 'I') {
-		noValue = "0";
-	} else if (tipo == 'D') {
-		noValue = "0.0";
-	} else
-		noValue[0] = '\0';
-
+	if (tipo == 'I') noValue = "0";
+	else if (tipo == 'D') noValue = "0.0";
+	else noValue[0] = '\0';
 	return noValue;
 }
 /* ----------------------------------------------------------------------------------------------
@@ -105,40 +94,28 @@ char *getInsertedValue(rc_insert *s_insert, char *columnName, table *tabela) {
    ---------------------------------------------------------------------------------------------*/
 
 int iniciaAtributos(struct fs_objects *objeto, tp_table **tabela, tp_buffer **bufferpool, char *nomeT){
-
-
     *objeto     = leObjeto(nomeT);
     *tabela     = leSchema(*objeto);
     *bufferpool = initbuffer();
-
-    if(*tabela == ERRO_ABRIR_ESQUEMA) {
-        return ERRO_DE_PARAMETRO;
-    }
-
-    if(*bufferpool == ERRO_DE_ALOCACAO)
-        return ERRO_DE_PARAMETRO;
-
+    if(*tabela == ERRO_ABRIR_ESQUEMA) return ERRO_DE_PARAMETRO;
+    if(*bufferpool == ERRO_DE_ALOCACAO) return ERRO_DE_PARAMETRO;
     return SUCCESS;
 }
 ////
 int verifyFK(char *tableName, char *column){
-    if(verificaNomeTabela(tableName) == 1){
-        struct fs_objects objeto = leObjeto(tableName);
-        tp_table *esquema = leSchema(objeto);
-		if(esquema == ERRO_ABRIR_ESQUEMA){
-            printf("ERROR: cannot create schema.\n");
-            return 0;
-        }
-
-        for(; esquema != NULL; esquema = esquema->next){
-            if(objcmp(esquema->nome, column) == 0){
-                if(esquema->chave == PK){
-                    return 1;
-                }
-            }
-        }
+  int r = 0;
+  if(verificaNomeTabela(tableName) == 1){
+    struct fs_objects objeto = leObjeto(tableName);
+    tp_table *esquema = leSchema(objeto),*k;
+    if(esquema == ERRO_ABRIR_ESQUEMA){
+      printf("ERROR: cannot create schema.\n");
+      return 0;
     }
-	return 0;
+    for(k = esquema; k && !r; k = k->next)
+      r = (k->chave == PK && objcmp(k->nome, column) == 0);
+    free(esquema);
+  }
+  return r;
 }
 
 ////////
@@ -164,18 +141,12 @@ int verificaChaveFK(char *nomeTabela,column *c, char *nomeCampo, char *valorCamp
     strcat(str, dat);              //Concatena e junta o nome com .dat
 
     erro = existeAtributo(nomeTabela, c);
-    /*if(erro != SUCCESS )
-        return ERRO_DE_PARAMETRO;*/
-
-    //if(existeAtributo(tabelaApt, c))
-        //return ERRO_CHAVE_ESTRANGEIRA;
 
     if(iniciaAtributos(&objeto, &tabela, &bufferpoll, tabelaApt) != SUCCESS) {
         free(bufferpoll);
         free(tabela);
         return ERRO_DE_PARAMETRO;
     }
-
 
     erro = SUCCESS;
     for(x = 0; erro == SUCCESS; x++)
@@ -197,7 +168,8 @@ int verificaChaveFK(char *nomeTabela,column *c, char *nomeCampo, char *valorCamp
                             free(tabela);
                             return SUCCESS;
                         }
-                    } else if(pagina[j].tipoCampo == 'I'){
+                    }
+                    else if(pagina[j].tipoCampo == 'I'){
                         int *n = (int *)&pagina[j].valorCampo[0];
                         if(*n == atoi(valorCampo)){
                             free(pagina);
@@ -205,7 +177,8 @@ int verificaChaveFK(char *nomeTabela,column *c, char *nomeCampo, char *valorCamp
                             free(tabela);
                             return SUCCESS;
                         }
-                    } else if(pagina[j].tipoCampo == 'D'){
+                    }
+                    else if(pagina[j].tipoCampo == 'D'){
                         double *nn = (double *)&pagina[j].valorCampo[0];
 
                         if(*nn == atof(valorCampo)){
@@ -214,14 +187,16 @@ int verificaChaveFK(char *nomeTabela,column *c, char *nomeCampo, char *valorCamp
                             free(tabela);
                             return SUCCESS;
                         }
-                    } else if(pagina[j].tipoCampo == 'C'){
+                    }
+                    else if(pagina[j].tipoCampo == 'C'){
                         if(pagina[j].valorCampo == valorCampo){
                             free(pagina);
                             free(bufferpoll);
                             free(tabela);
                             return SUCCESS;
                         }
-                    } else {
+                    }
+                    else {
                         free(pagina);
                         free(bufferpoll);
                         free(tabela);
@@ -231,7 +206,6 @@ int verificaChaveFK(char *nomeTabela,column *c, char *nomeCampo, char *valorCamp
             }
         }
     }
-
     if (pagina) free(pagina);
     free(bufferpoll);
     free(tabela);
@@ -245,7 +219,6 @@ int verificaChaveFK(char *nomeTabela,column *c, char *nomeCampo, char *valorCamp
                 ERRO_DE_PARAMETRO,
                 ERRO_CHAVE_PRIMARIA
    ---------------------------------------------------------------------------------------------*/
-
 int verificaChavePK(char *nomeTabela, column *c, char *nomeCampo, char *valorCampo) {
     int j, x, erro, page;
     column *pagina = NULL;
@@ -259,7 +232,6 @@ int verificaChavePK(char *nomeTabela, column *c, char *nomeCampo, char *valorCam
         free(bufferpoll);
         return ERRO_DE_PARAMETRO;
     }
-
 
     if (iniciaAtributos(&objeto, &tabela, &bufferpoll, nomeTabela) != SUCCESS) {
         free(bufferpoll);
@@ -344,138 +316,128 @@ int finalizaInsert(char *nome, column *c){
     for(j = 0, temp = c; j < objeto.qtdCampos && temp != NULL; j++, temp = temp->next){
         switch(tab2[j].chave){
             case NPK:
-                erro = SUCCESS;
-                break;
+              erro = SUCCESS;
+            break;
 
             case PK:
-                erro = verificaChavePK(nome, temp , temp->nomeCampo, temp->valorCampo);
-                if (erro == ERRO_CHAVE_PRIMARIA){
-                    printf("ERROR: duplicate key value violates unique constraint \"%s_pkey\"\nDETAIL:  Key (%s)=(%s) already exists.\n", nome, temp->nomeCampo, temp->valorCampo);
+              erro = verificaChavePK(nome, temp , temp->nomeCampo, temp->valorCampo);
+              if (erro == ERRO_CHAVE_PRIMARIA){
+                  printf("ERROR: duplicate key value violates unique constraint \"%s_pkey\"\nDETAIL:  Key (%s)=(%s) already exists.\n", nome, temp->nomeCampo, temp->valorCampo);
 
-					free(auxT); // Libera a memoria da estrutura.
-					//free(temp); // Libera a memoria da estrutura.
-					free(tab); // Libera a memoria da estrutura.
-					free(tab2); // Libera a memoria da estrutura.
-                    return ERRO_CHAVE_PRIMARIA;
-                }
-
-                break;
+				          free(auxT); // Libera a memoria da estrutura.
+				          //free(temp); // Libera a memoria da estrutura.
+				          free(tab); // Libera a memoria da estrutura.
+				          free(tab2); // Libera a memoria da estrutura.
+                  return ERRO_CHAVE_PRIMARIA;
+              }
+            break;
 
             case FK:
-                if (tab2[j].chave == 2 && strlen(tab2[j].attApt) != 0 && strlen(tab2[j].tabelaApt) != 0){
+              if (tab2[j].chave == 2 && strlen(tab2[j].attApt) != 0 && strlen(tab2[j].tabelaApt) != 0){
+                  erro = verificaChaveFK(nome, temp, tab2[j].nome, temp->valorCampo,
+                                          tab2[j].tabelaApt, tab2[j].attApt);
+                  if (erro != SUCCESS){
+                      printf("ERROR: invalid reference to \"%s.%s\". The value \"%s\" does not exist.\n", tab2[j].tabelaApt,tab2[j].attApt,temp->valorCampo);
 
-                    erro = verificaChaveFK(nome, temp, tab2[j].nome, temp->valorCampo, tab2[j].tabelaApt, tab2[j].attApt);
-
-                    if (erro != SUCCESS){
-                        printf("ERROR: invalid reference to \"%s.%s\". The value \"%s\" does not exist.\n", tab2[j].tabelaApt,tab2[j].attApt,temp->valorCampo);
-
-						free(auxT); // Libera a memoria da estrutura.
-						free(temp); // Libera a memoria da estrutura.
-                        free(tab); // Libera a memoria da estrutura.
-						free(tab2); // Libera a memoria da estrutura.
-                        return ERRO_CHAVE_ESTRANGEIRA;
-                    }
-                }
-
-                break;
+          						free(auxT); // Libera a memoria da estrutura.
+          						free(temp); // Libera a memoria da estrutura.
+                      free(tab); // Libera a memoria da estrutura.
+					            free(tab2); // Libera a memoria da estrutura.
+                      return ERRO_CHAVE_ESTRANGEIRA;
+                  }
+              }
+            break;
         }
     }
 
-
     if (erro == ERRO_CHAVE_ESTRANGEIRA){
-        printf("ERROR: unknown foreign key error.\n");
-
-		free(auxT); // Libera a memoria da estrutura.
-		free(temp); // Libera a memoria da estrutura.
-        free(tab); // Libera a memoria da estrutura.
-		free(tab2); // Libera a memoria da estrutura.
-        return ERRO_CHAVE_ESTRANGEIRA;
+      printf("ERROR: unknown foreign key error.\n");
+      free(auxT); // Libera a memoria da estrutura.
+      free(temp); // Libera a memoria da estrutura.
+      free(tab); // Libera a memoria da estrutura.
+      free(tab2); // Libera a memoria da estrutura.
+      return ERRO_CHAVE_ESTRANGEIRA;
     }
 
     if (erro == ERRO_CHAVE_PRIMARIA){
-        printf("ERROR: unknown primary key error.\n");
-
-		free(auxT); // Libera a memoria da estrutura.
-		free(temp); // Libera a memoria da estrutura.
-        free(tab); // Libera a memoria da estrutura.
-		free(tab2); // Libera a memoria da estrutura.
-        return ERRO_CHAVE_PRIMARIA;
+      printf("ERROR: unknown primary key error.\n");
+      free(auxT); // Libera a memoria da estrutura.
+      free(temp); // Libera a memoria da estrutura.
+      free(tab); // Libera a memoria da estrutura.
+      free(tab2); // Libera a memoria da estrutura.
+      return ERRO_CHAVE_PRIMARIA;
     }
+
     if (erro == ERRO_DE_PARAMETRO) {
-        printf("ERROR: invalid parameter.\n");
-		free(auxT); // Libera a memoria da estrutura.
-		free(temp); // Libera a memoria da estrutura.
-        free(tab); // Libera a memoria da estrutura.
-		free(tab2); // Libera a memoria da estrutura.
-        return ERRO_DE_PARAMETRO;
+      printf("ERROR: invalid parameter.\n");
+      free(auxT); // Libera a memoria da estrutura.
+      free(temp); // Libera a memoria da estrutura.
+      free(tab); // Libera a memoria da estrutura.
+      free(tab2); // Libera a memoria da estrutura.
+      return ERRO_DE_PARAMETRO;
     }
 
-    char directory[LEN_DB_NAME*2];
+    char directory[LEN_DB_NAME_IO];
     strcpy(directory, connected.db_directory);
     strcat(directory, dicio.nArquivo);
 
     if((dados = fopen(directory,"a+b")) == NULL){
-        printf("ERROR: cannot open file.\n");
-		free(auxT); // Libera a memoria da estrutura.
-		free(temp); // Libera a memoria da estrutura.
-        free(tab); // Libera a memoria da estrutura.
-		free(tab2); // Libera a memoria da estrutura.
-        return ERRO_ABRIR_ARQUIVO;
-
-	}
+      printf("ERROR: cannot open file.\n");
+  		free(auxT); // Libera a memoria da estrutura.
+  		free(temp); // Libera a memoria da estrutura.
+      free(tab); // Libera a memoria da estrutura.
+  		free(tab2); // Libera a memoria da estrutura.
+      return ERRO_ABRIR_ARQUIVO;
+	   }
 
     for(auxC = c, t = 0; auxC != NULL; auxC = auxC->next, t++){
-        if (t >= dicio.qtdCampos)
-            t = 0;
+        if (t >= dicio.qtdCampos) t = 0;
 
         if (auxT[t].tipo == 'S'){ // Grava um dado do tipo string.
+          if (sizeof(auxC->valorCampo) > auxT[t].tam && sizeof(auxC->valorCampo) != 8){
+            printf("ERROR: invalid string length.\n");
+			      free(tab); // Libera a memoria da estrutura.
+			      free(tab2); // Libera a memoria da estrutura.
+			      free(auxT); // Libera a memoria da estrutura.
+			      free(temp); // Libera a memoria da estrutura.
+			      fclose(dados);
+            return ERRO_NO_TAMANHO_STRING;
+          }
 
-            if (sizeof(auxC->valorCampo) > auxT[t].tam && sizeof(auxC->valorCampo) != 8){
-                printf("ERROR: invalid string length.\n");
-				free(tab); // Libera a memoria da estrutura.
-				free(tab2); // Libera a memoria da estrutura.
-				free(auxT); // Libera a memoria da estrutura.
-				free(temp); // Libera a memoria da estrutura.
-				fclose(dados);
-                return ERRO_NO_TAMANHO_STRING;
+          if(objcmp(auxC->nomeCampo, auxT[t].nome) != 0){
+            printf("ERROR: column name \"%s\" is not valid.\n", auxC->nomeCampo);
+			      free(tab); // Libera a memoria da estrutura.
+			      free(tab2); // Libera a memoria da estrutura.
+			      free(auxT); // Libera a memoria da estrutura.
+			      free(temp); // Libera a memoria da estrutura.
+			      fclose(dados);
+            return ERRO_NOME_CAMPO;
+          }
+
+          char valorCampo[auxT[t].tam];
+          strncpy(valorCampo, auxC->valorCampo, auxT[t].tam);
+          strcat(valorCampo, "\0");
+          fwrite(&valorCampo,sizeof(valorCampo),1,dados);
+        }
+        else if (auxT[t].tipo == 'I'){ // Grava um dado do tipo inteiro.
+          i = 0;
+          while (i < strlen(auxC->valorCampo)){
+            if(auxC->valorCampo[i] < 48 || auxC->valorCampo[i] > 57){
+              printf("ERROR: column \"%s\" expectet integer.\n", auxC->nomeCampo);
+  				    free(tab); // Libera a memoria da estrutura.
+  				    free(tab2); // Libera a memoria da estrutura.
+  				    free(auxT); // Libera a memoria da estrutura.
+  				    //free(temp); // Libera a memoria da estrutura.
+  				    fclose(dados);
+              return ERRO_NO_TIPO_INTEIRO;
             }
-
-            if (objcmp(auxC->nomeCampo, auxT[t].nome) != 0){
-                printf("ERROR: column name \"%s\" is not valid.\n", auxC->nomeCampo);
-				free(tab); // Libera a memoria da estrutura.
-				free(tab2); // Libera a memoria da estrutura.
-				free(auxT); // Libera a memoria da estrutura.
-				free(temp); // Libera a memoria da estrutura.
-				fclose(dados);
-                return ERRO_NOME_CAMPO;
-            }
-
-            char valorCampo[auxT[t].tam];
-            strncpy(valorCampo, auxC->valorCampo, auxT[t].tam);
-            strcat(valorCampo, "\0");
-            fwrite(&valorCampo,sizeof(valorCampo),1,dados);
-
-        } else if (auxT[t].tipo == 'I'){ // Grava um dado do tipo inteiro.
-            i = 0;
-            while (i < strlen(auxC->valorCampo)){
-                if (auxC->valorCampo[i] < 48 || auxC->valorCampo[i] > 57){
-                    printf("ERROR: column \"%s\" expectet integer.\n", auxC->nomeCampo);
-					free(tab); // Libera a memoria da estrutura.
-					free(tab2); // Libera a memoria da estrutura.
-					free(auxT); // Libera a memoria da estrutura.
-					//free(temp); // Libera a memoria da estrutura.
-					fclose(dados);
-                    return ERRO_NO_TIPO_INTEIRO;
-                }
-                i++;
-            }
-
-            int valorInteiro = 0;
-
-            sscanf(auxC->valorCampo,"%d",&valorInteiro);
-            fwrite(&valorInteiro,sizeof(valorInteiro),1,dados);
-
-        } else if (auxT[t].tipo == 'D'){ // Grava um dado do tipo double.
+            i++;
+          }
+          int valorInteiro = 0;
+          sscanf(auxC->valorCampo,"%d",&valorInteiro);
+          fwrite(&valorInteiro,sizeof(valorInteiro),1,dados);
+        }
+        else if (auxT[t].tipo == 'D'){ // Grava um dado do tipo double.
             x = 0;
             while (x < strlen(auxC->valorCampo)){
                 if((auxC->valorCampo[x] < 48 || auxC->valorCampo[x] > 57) && (auxC->valorCampo[x] != 46)){
@@ -510,12 +472,12 @@ int finalizaInsert(char *nome, column *c){
 
     }
 
-    fclose(dados);
-    free(tab); // Libera a memoria da estrutura.
-	free(tab2); // Libera a memoria da estrutura.
-    free(auxT); // Libera a memoria da estrutura.
-    free(temp); // Libera a memoria da estrutura.
-    return SUCCESS;
+  fclose(dados);
+  free(tab); // Libera a memoria da estrutura.
+  free(tab2); // Libera a memoria da estrutura.
+  free(auxT); // Libera a memoria da estrutura.
+  free(temp); // Libera a memoria da estrutura.
+  return SUCCESS;
 }
 
 /* insert: Recebe uma estrutura rc_insert e valida os tokens encontrados pela interface().
@@ -535,20 +497,23 @@ void insert(rc_insert *s_insert) {
 	abreTabela(s_insert->objName, &objeto, &tabela->esquema); //retorna o esquema para a insere valor
 	strcpylower(tabela->nome, s_insert->objName);
 
-	if(s_insert->columnName != NULL) {
-		if (allColumnsExists(s_insert, tabela)) {
-			for (esquema = tabela->esquema; esquema != NULL; esquema = esquema->next) {
-				if(typesCompatible(esquema->tipo,getInsertedType(s_insert, esquema->nome, tabela))) {
+	if(s_insert->columnName != NULL){
+		if (allColumnsExists(s_insert, tabela)){
+			for (esquema = tabela->esquema; esquema != NULL; esquema = esquema->next){
+				if(typesCompatible(esquema->tipo,getInsertedType(s_insert, esquema->nome, tabela))){
 					colunas = insereValor(tabela, colunas, esquema->nome, getInsertedValue(s_insert, esquema->nome, tabela));
-				} else {
+				}
+        else {
 					printf("ERROR: data type invalid to column '%s' of relation '%s' (expected: %c, received: %c).\n", esquema->nome, tabela->nome, esquema->tipo, getInsertedType(s_insert, esquema->nome, tabela));
 					flag=1;
 				}
 			}
-		} else {
+		}
+    else {
 			flag = 1;
 		}
-	} else {
+	}
+  else {
 		if (s_insert->N == objeto.qtdCampos) {
 			for(i=0; i < objeto.qtdCampos; i++) {
 
@@ -558,7 +523,6 @@ void insert(rc_insert *s_insert) {
 				}
 
 				if(s_insert->type[i] == 'I' && tabela->esquema[i].tipo == 'D') {
-
 					s_insert->type[i] = 'D';
 				}
 
@@ -569,15 +533,15 @@ void insert(rc_insert *s_insert) {
 					flag=1;
 				}
 			}
-		} else {
-			printf("ERROR: INSERT has more expressions than target columns.\n");
-			flag = 1;
+		}
+    else {
+      printf("ERROR: INSERT has more expressions than target columns.\n");
+		  flag = 1;
 		}
 	}
 
-	if (!flag)
-		if (finalizaInsert(s_insert->objName, colunas) == SUCCESS)
-			printf("INSERT 0 1\n");
+  if (!flag && finalizaInsert(s_insert->objName, colunas) == SUCCESS)
+    printf("INSERT 0 1\n");
 
 	//freeTp_table(&esquema, objeto.qtdCampos);
 	free(esquema);
@@ -585,93 +549,254 @@ void insert(rc_insert *s_insert) {
 	freeTable(tabela);
 }
 
-
-///////////////
-void imprime(char nomeTabela[]) {
-
-    int j,erro, x, p, cont=0;
-    struct fs_objects objeto;
-
-    if(!verificaNomeTabela(nomeTabela)){
-        printf("\nERROR: relation \"%s\" was not found.\n\n\n", nomeTabela);
-        return;
+//select * from t4;
+int validaProj(Lista *proj,column *colunas,int qtdColunas,char *pert){
+  if(proj->tam == 1 && ((char *)proj->prim->inf)[0] == '*'){
+    free(rmvNodoPtr(proj,proj->prim));
+    proj->prim = proj->ult = NULL;
+    for(int j = 0;j < qtdColunas; j++){
+      pert[j] = 1;
+      char *str = malloc(sizeof(char)*strlen(colunas[j].nomeCampo));
+      strcpy(str,colunas[j].nomeCampo);
+      adcNodo(proj,proj->ult,str);
     }
-
-    objeto = leObjeto(nomeTabela);
-
-    tp_table *esquema = leSchema(objeto);
-
-    if(esquema == ERRO_ABRIR_ESQUEMA){
-        printf("ERROR: schema cannot be created.\n");
-        free(esquema);
-        return;
+    return 1;
+  }
+  char *validar = malloc(sizeof(char)*proj->tam);
+  for(int j = 0; j < proj->tam; j++) validar[j] = 0;
+  for(int j = 0; j < qtdColunas; j++){
+    int k = 0;
+    for(Nodo *it = proj->prim; it; it = it->prox,k++){
+      pert[j] |= (strcmp((char *)it->inf,colunas[j].nomeCampo) == 0);
+      validar[k] |= pert[j];
     }
-
-    tp_buffer *bufferpoll = initbuffer();
-
-    if(bufferpoll == ERRO_DE_ALOCACAO){
-        free(bufferpoll);
-        free(esquema);
-        printf("ERROR: no memory available to allocate buffer.\n");
-        return;
+  }
+  int k = 0;
+  for(Nodo *it = proj->prim; it; it = it->prox,k++){
+    if(!validar[k]){
+      free(validar);
+      printf("A coluna da projecao %s não pertence a tabela.\n",(char *)it->inf);
+      return 0;
     }
+  }
+  free(validar);
+  return 1;
+}
 
-    erro = SUCCESS;
-    for(x = 0; erro == SUCCESS; x++)
-        erro = colocaTuplaBuffer(bufferpoll, x, esquema, objeto);
+inf_where *novoTokenWhere(char *str,int id){
+  inf_where *novo = malloc(sizeof(inf_where));
+  novo->id = id;
+  char *tk = malloc(sizeof(char)*strlen(str));
+  strcpy(tk,str);
+  novo->token = (void *)tk;
+  return novo;
+}
 
-    int ntuples = --x;
-	p = 0;
-	while(x){
-	    column *pagina = getPage(bufferpoll, esquema, objeto, p);
-	    if(pagina == ERRO_PARAMETRO){
-            printf("ERROR: could not open the table.\n");
-            free(bufferpoll);
-            free(esquema);
-            return;
-	    }
+inf_where *novoResWhere(void *tk,int id){
+  if(id == STRING || id == ABRE_PARENT || id == FECHA_PARENT)
+    return novoTokenWhere((char *)tk,id);
+  inf_where *novo = malloc(sizeof(inf_where));
+  novo->id = id;
+  if(novo->id == VALUE_NUMBER){
+    double *tok = malloc(sizeof(double));
+    *tok = *((double *)tk);
+    novo->token = (void *)tok;
+  }
+  else{//BOOLEANO
+    char *tok = malloc(sizeof(char));
+    *tok = *((char *)tk);
+    novo->token = (void *)tok;
+  }
+  return novo;
+}
 
-	    if(!cont) {
-	        for(j=0; j < objeto.qtdCampos; j++){
-	            if(pagina[j].tipoCampo == 'S')
-	                printf(" %-20s ", pagina[j].nomeCampo);
-	        	else
-	                printf(" %-10s ", pagina[j].nomeCampo);
-	            if(j<objeto.qtdCampos-1)
-	            	printf("|");
-	        }
-	        printf("\n");
-	        for(j=0; j < objeto.qtdCampos; j++){
-	            printf("%s",(pagina[j].tipoCampo == 'S')? "----------------------": "------------");
-	            if(j<objeto.qtdCampos-1)
-	            	printf("+");
-	        }
-	        printf("\n");
-	    }
-	    cont++;
-		for(j=0; j < objeto.qtdCampos*bufferpoll[p].nrec; j++){
-        	if(pagina[j].tipoCampo == 'S')
-            	printf(" %-20s ", pagina[j].valorCampo);
-        	else if(pagina[j].tipoCampo == 'I'){
-            	int *n = (int *)&pagina[j].valorCampo[0];
-            	printf(" %-10d ", *n);
-        	} else if(pagina[j].tipoCampo == 'C'){
-            	printf(" %-10c ", pagina[j].valorCampo[0]);
-        	} else if(pagina[j].tipoCampo == 'D'){
-            	double *n = (double *)&pagina[j].valorCampo[0];
-    	        printf(" %-10f ", *n);
-        	}
-            if(j>=1 && ((j+1)%objeto.qtdCampos)==0)
-            	printf("\n");
-        	else
-        		printf("|");
-    	}
-    	x-=bufferpoll[p++].nrec;
+int validaColsWhere(Lista *tok,column *colunas,int qtdColunas){
+  if(!tok) return 1;
+  for(Nodo *i = tok->prim; i; i = i->prox){
+    inf_where *iw = (inf_where *)i->inf;
+    if(iw->id == OBJETO){
+      int achou = 0;
+      char *str = (char *)iw->token;
+      for(int j = 0; !achou && j < qtdColunas; j++)
+        achou = (strcmp(str,colunas[j].nomeCampo) == 0);
+      if(!achou){
+        printf("A coluna %s não pertene a tabela.\n",str);
+        return 0;
+      }
     }
-    printf("\n(%d %s)\n\n",ntuples,(1>=ntuples)?"row": "rows");
+  }
+  return 1;
+}
 
+void printConsulta(Lista *p,Lista *l){
+  if(!l->tam){
+    printf("\n 0 Linhas.\n");
+    return;
+  }
+  //cabecalho
+  for(Nodo *j = ((Lista *)(l->prim->inf))->prim,
+           *i = p->prim; j; j = j->prox,i = i->prox){
+    inf_where *jw = (inf_where *)(j->inf);
+    if(jw->id == (int)'S') printf(" %-20s ", (char *)(i->inf));
+    else printf(" %-10s ", (char *)(i->inf));
+    if(j->prox) printf("|");
+  }
+  printf("\n");
+  for(Nodo *j = ((Lista *)(l->prim->inf))->prim; j; j = j->prox){
+    inf_where *jw = (inf_where *)(j->inf);
+    printf("%s",(jw->id == (int)'S') ? "----------------------"
+                                     : "------------");
+    if(j->prox) printf("+");
+  }
+  printf("\n");//fim do cabecalho
+  for(Nodo *i = l->prim; i; i = i->prox){
+    Lista *li = (Lista *)(i->inf);
+    for(Nodo *j = li->prim; j; j = j->prox){
+      inf_where *ij = (inf_where *)(j->inf);
+      if(ij->id == (int)'S')
+        printf(" %-20s ", (char *)ij->token);
+      else if(ij->id == (int)'I'){
+        int *n = (int *)(ij->token);
+        printf(" %-10d ", *n);
+      }
+      else if(ij->id == (int)'C')
+        printf(" %-10c ", *(char *)ij->token);
+      else if(ij->id == (int)'D'){
+        double *n = (double *)(ij->token);
+        printf(" %-10f ", *n);
+      }
+      printf("|");
+    }
+    printf("\n");
+  }
+  printf("\n %d Linha%s.\n",l->tam,l->tam == 1 ? "" : "s");
+}
+
+void adcResultado(Lista *resultado,Lista *tupla,char *pertence){
+  adcNodo(resultado,resultado->ult,(void *)novaLista(NULL));
+  Lista *tuplaRes = (Lista *)(resultado->ult->inf);
+  int ci = 0;
+  for(Nodo *n1 = tupla->prim; n1; n1 = n1->prox,ci++){
+    column *c = (column *)(n1->inf);
+    if(pertence[ci]){//adcionar em resultado.
+      inf_where *nw = malloc(sizeof(inf_where));
+      nw->id = c->tipoCampo;
+      if(c->tipoCampo == 'S'){
+        char *str = malloc(sizeof(char)*strlen(c->valorCampo));
+        str[0] = '\0';
+        strcpy(str,c->valorCampo);
+        nw->token = (void *)str;
+      }
+      else if(c->tipoCampo == 'I'){
+        int *n = malloc(sizeof(int));
+        n = (int *)(c->valorCampo);
+        nw->token = ( void *)n;
+      }
+      else if(c->tipoCampo == 'C'){
+        char *n = malloc(sizeof(char));
+        n = (char *)(c->valorCampo);
+        nw->token = ( void *)n;
+      }
+      else if(c->tipoCampo == 'D'){
+        double *n = malloc(sizeof(double));
+        n = (double *)(c->valorCampo);
+        nw->token = ( void *)n;
+      }
+      adcNodo(tuplaRes,tuplaRes->ult,(void *)nw);
+    }
+  }
+}
+
+Lista *op_select(inf_select *select) {
+  //inicio das validações.
+  tp_table *esquema;
+  tp_buffer *bufferpoll;
+  struct fs_objects objeto;
+  if(!verificaNomeTabela(select->tabela)){
+    printf("\nERROR: relation \"%s\" was not found.\n\n\n", select->tabela);
+    return NULL;
+  }
+  objeto = leObjeto(select->tabela);
+  esquema = leSchema(objeto);
+  if(esquema == ERRO_ABRIR_ESQUEMA){
+    printf("ERROR: schema cannot be created.\n");
+    free(esquema);
+    return NULL;
+  }
+  bufferpoll = initbuffer();
+  if(bufferpoll == ERRO_DE_ALOCACAO){
     free(bufferpoll);
     free(esquema);
+    printf("ERROR: no memory available to allocate buffer.\n");
+    return NULL;
+  }
+  int erro = SUCCESS,x;
+  for(x = 0; erro == SUCCESS; x++)
+    erro = colocaTuplaBuffer(bufferpoll, x, esquema, objeto);
+  x--;
+  column *pagina = getPage(bufferpoll, esquema, objeto, 0);
+  if(!pagina){
+    printf("Tabela vazia.\n");
+    free(bufferpoll);
+    free(esquema);
+    return NULL;
+  }
+  char *pertence = malloc(sizeof(char)*objeto.qtdCampos);
+  if(!validaProj(select->proj,pagina,objeto.qtdCampos,pertence)){
+    free(bufferpoll);
+    free(pertence);
+    free(esquema);
+    return NULL;
+  }
+  if(!validaColsWhere(select->tok,pagina,objeto.qtdCampos)){
+    free(bufferpoll);
+    free(pertence);
+    free(esquema);
+    return NULL;
+  }
+  int i,j,k;
+  char abortar = 0;
+  Lista *tupla = novaLista(NULL),
+        *resultado = novaLista(NULL);
+  for(int p = 0; !abortar && x; x -= bufferpoll[p++].nrec){
+    pagina = getPage(bufferpoll, esquema, objeto, p);
+    if(pagina == ERRO_PARAMETRO){
+      printf("ERROR: could not open the table.\n");
+      free(bufferpoll);
+      free(esquema);
+      return NULL;
+    }
+    for(k = j = i = 0; !abortar && k < bufferpoll[p].nrec; k++){
+      for(i = 0; i < objeto.qtdCampos; i++,j++)
+        adcNodo(tupla,tupla->ult,(void *)(&pagina[j]));
+      char sat = 0;
+      if(select->tok){
+        Lista *l = resArit(select->tok,tupla);
+        if(l){
+          Lista *l2 = relacoes(l);
+          sat = (logPosfixa(l2) != 0);
+        }
+        else abortar = 1;
+      }
+      else sat = 1;
+      if(!abortar && sat) adcResultado(resultado,tupla,pertence);
+      for(Nodo *n1 = tupla->prim,*n2; n1; n1 = n2){
+        n2 = n1->prox;
+        rmvNodoPtr(tupla,n1);
+        //não precisa dar free na informação
+        //pois é ponteiro pra pagina[j]
+      }
+      tupla->prim = tupla->ult = NULL;
+    }
+  }
+  if(abortar){
+    resultado = NULL;
+  }
+  free(tupla); tupla = NULL;
+  free(esquema); esquema = NULL;
+  free(pertence); pertence = NULL;
+  free(bufferpoll); bufferpoll = NULL;
+  return resultado;
 }
 /* ----------------------------------------------------------------------------------------------
     Objetivo:   Copia todas as informações menos a tabela do objeto, que será removida.
@@ -682,7 +807,6 @@ void imprime(char nomeTabela[]) {
    ---------------------------------------------------------------------------------------------*/
 
 int procuraSchemaArquivo(struct fs_objects objeto){
-
     FILE *schema, *newSchema;
     int cod = 0;
     char *tupla = (char *)malloc(sizeof(char) * 109);
@@ -691,8 +815,8 @@ int procuraSchemaArquivo(struct fs_objects objeto){
     tp_table *esquema = (tp_table *)malloc(sizeof(tp_table)*objeto.qtdCampos);
     memset(esquema, 0, sizeof(tp_table)*objeto.qtdCampos);
 
-    char directory[LEN_DB_NAME*2];
-    memset(&directory, '\0', LEN_DB_NAME*2);
+    char directory[LEN_DB_NAME_IO];
+    memset(&directory, '\0', LEN_DB_NAME_IO);
 
     strcpy(directory, connected.db_directory);
     strcat(directory, "fs_schema.dat");
@@ -749,8 +873,8 @@ int procuraSchemaArquivo(struct fs_objects objeto){
     fclose(newSchema);
     fclose(schema);
 
-    char directoryex[LEN_DB_NAME*4];
-    memset(&directoryex, '\0', LEN_DB_NAME*4);
+    char directoryex[LEN_DB_NAME_IO*2];
+    memset(&directoryex, '\0', LEN_DB_NAME_IO*2);
     strcpy(directoryex, connected.db_directory);
     strcat(directoryex, "fs_schema.dat");
 
@@ -804,34 +928,25 @@ int excluirTabela(char *nomeTabela) {
         tupla[i] = (char *)malloc(sizeof(char)*TAMANHO_NOME_TABELA);
         memset(tupla[i], '\0', TAMANHO_NOME_TABELA);
     }
-
     tp_table *tab2 = (tp_table *)malloc(sizeof(struct tp_table));
     tab2 = procuraAtributoFK(objeto);   //retorna o tipo de chave que e cada campo
-
     FILE *dicionario;
-
-    char directory[LEN_DB_NAME*2];
-    memset(directory, '\0', LEN_DB_NAME*2);
-
+    char directory[LEN_DB_NAME_IO*2];
+    memset(directory, '\0', LEN_DB_NAME_IO*2);
     strcpy(directory, connected.db_directory);
     strcat(directory, "fs_object.dat");
 
     if((dicionario = fopen(directory,"a+b")) == NULL)
         return ERRO_ABRIR_ARQUIVO;
-
     k=0;
     while(fgetc (dicionario) != EOF){
         fseek(dicionario, -1, 1);
-
         //coloca o nome de todas as tabelas em tupla
         fread(tupla[k], sizeof(char), TAMANHO_NOME_TABELA , dicionario);
         k++;
-
         fseek(dicionario, 28, 1);
     }
-
     fclose(dicionario);
-
     for(i = 0; i < objeto.qtdCampos; i++){
         if(tab2[i].chave == PK){
             for(j=0; j<qtTable; j++) {                      //se tiver chave primaria verifica se ela e chave
@@ -857,9 +972,7 @@ int excluirTabela(char *nomeTabela) {
     }
 
     free(tab2);
-
     tp_buffer *bufferpoll = initbuffer();
-
     if(bufferpoll == ERRO_DE_ALOCACAO){
         printf("ERROR: no memory available to allocate buffer.\n");
         return ERRO_LEITURA_DADOS;
@@ -881,13 +994,9 @@ int excluirTabela(char *nomeTabela) {
 
    	strcpy(directory, connected.db_directory);
     strcat(directory, str);
-
     remove(directory);
-
     free(bufferpoll);
-
     printf("DROP TABLE\n");
-
     return SUCCESS;
 }
 
@@ -908,61 +1017,61 @@ int verifyFieldName(char **fieldName, int N){
 
 //////
 void createTable(rc_insert *t) {
+  if(strlen(t->objName) > TAMANHO_NOME_TABELA){
+      printf("A table name must have no more than %d caracteres.\n",TAMANHO_NOME_TABELA);
+      return;
+  }
 	int size;
-    strcpylower(t->objName, t->objName);        //muda pra minúsculo
-    char *tableName = (char*) malloc (sizeof(char)*TAMANHO_NOME_TABELA),
-        fkTable[TAMANHO_NOME_TABELA], fkColumn[TAMANHO_NOME_CAMPO];
+  strcpylower(t->objName, t->objName);        //muda pra minúsculo
+  char *tableName = (char*) malloc(sizeof(char)*(TAMANHO_NOME_TABELA+10)),
+                    fkTable[TAMANHO_NOME_TABELA], fkColumn[TAMANHO_NOME_CAMPO];
 
-    strncpylower(tableName, t->objName, TAMANHO_NOME_TABELA);
+  strncpylower(tableName, t->objName, TAMANHO_NOME_TABELA);
+  strcat(tableName, ".dat\0");                  //tableName.dat
+  if(existeArquivo(tableName)){
+    printf("ERROR: table already exist\n");
+    free(tableName);
+    return;
+  }
 
-    strcat(tableName, ".dat\0");                  //tableName.dat
-
-    if(existeArquivo(tableName)){
-        printf("ERROR: table already exist\n");
-        free(tableName);
-        return;
-    }
-
-    table *tab = NULL;
-    tab = iniciaTabela(t->objName);    //cria a tabela
-
-    if(0 == verifyFieldName(t->columnName, t->N)){
+  table *tab = NULL;
+  tab = iniciaTabela(t->objName);    //cria a tabela
+  if(0 == verifyFieldName(t->columnName, t->N)){
+    free(tableName);
+    freeTable(tab);
+    return;
+  }
+  int i;
+  for(i = 0; i < t->N; i++){
+    if(t->type[i] == 'S')
+  		size = atoi(t->values[i]);
+  	else if(t->type[i] == 'I')
+  		size = sizeof(int);
+  	else if(t->type[i] == 'D')
+  		size = sizeof(double);
+    else if(t->type[i] == 'C')
+  		size = sizeof(char);
+  	if(t->attribute[i] == FK){
+  		strncpylower(fkTable, t->fkTable[i], TAMANHO_NOME_TABELA);
+  		strncpylower(fkColumn,t->fkColumn[i], TAMANHO_NOME_CAMPO);
+  	}
+    else{
+  		strcpy(fkTable, "");
+  		strcpy(fkColumn, "");
+  	}
+    tab = adicionaCampo(tab, t->columnName[i], t->type[i], size, t->attribute[i], fkTable, fkColumn);
+    if((objcmp(fkTable, "") != 0) || (objcmp(fkColumn, "") != 0)){
+      if(verifyFK(fkTable, fkColumn) == 0){
+  		  printf("ERROR: attribute FK cannot be referenced\n");
         free(tableName);
         freeTable(tab);
         return;
+  		}
     }
-    int i;
-    for(i=0; i < t->N; i++){
-    	if (t->type[i] == 'S')
-    		size = atoi(t->values[i]);
-    	else if (t->type[i] == 'I')
-    		size = sizeof(int);
-    	else if (t->type[i] == 'D')
-    		size = sizeof(double);
-        else if (t->type[i] == 'C')
-    		size = sizeof(char);
+  }
 
-    	if (t->attribute[i] == FK) {
-    		strncpylower(fkTable, t->fkTable[i], TAMANHO_NOME_TABELA);
-    		strncpylower(fkColumn,t->fkColumn[i], TAMANHO_NOME_CAMPO);
-    	} else {
-    		strcpy(fkTable, "");
-    		strcpy(fkColumn, "");
-    	}
-
-        tab = adicionaCampo(tab, t->columnName[i], t->type[i], size, t->attribute[i], fkTable, fkColumn);
-        if((objcmp(fkTable, "") != 0) || (objcmp(fkColumn, "") != 0)){
-            if(verifyFK(fkTable, fkColumn) == 0){
-    			printf("ERROR: attribute FK cannot be referenced\n");
-                free(tableName);
-                freeTable(tab);
-                return;
-    		}
-        }
-    }
-
-    printf("%s\n",(finalizaTabela(tab) == SUCCESS)? "CREATE TABLE" : "ERROR: table already exist\n");
-    free(tableName);
-    if (tab != NULL) freeTable(tab);
+  printf("%s\n",(finalizaTabela(tab) == SUCCESS)? "CREATE TABLE" : "ERROR: table already exist\n");
+  free(tableName);
+  if(tab != NULL) freeTable(tab);
 }
 ///////

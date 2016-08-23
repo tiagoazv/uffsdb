@@ -33,7 +33,7 @@
 #define NPK 0
 #define PK 1
 #define FK 2
-//// 
+////
 #define SIZE 512                // Tamanho da página.
 #define PAGES 1024              // Número de páginas.
 #define TAMANHO_NOME_CAMPO 40   // Tamanho do nome dos campos de uma tabela.
@@ -41,6 +41,6 @@
 #define TAMANHO_NOME_ARQUIVO 20 // Tamanho do nome do arquivo.
 #define QTD_DB 100
 #define LEN_DB_NAME 20
+#define LEN_DB_NAME_IO (LEN_DB_NAME << 1)
 #define DB_EXISTS 1
 #define DB_NOT_EXISTS 24
-

@@ -35,7 +35,7 @@ int finalizaInsert(char *, column *);
     Parametros: Nome da tabela (char).
     Retorno:    void.
    ---------------------------------------------------------------------------------------------*/
-void imprime(char [] );
+Lista *op_select(inf_select *);
 /* ----------------------------------------------------------------------------------------------
     Objetivo:   Função para exclusão de tabelas.
     Parametros: Nome da tabela (char).
@@ -91,6 +91,41 @@ tp_table *abreTabela(char *, struct fs_objects *, tp_table **);
  *              e cria uma tabela no banco corrente
  */
 void createTable(rc_insert *);
+
+/*
+  Objetivo: Verificar se a projeção feita no insert é válida
+  Parametros: Uma lista com a projeção, um ponteiro
+              para as colunas da tabela e um inteiro
+              dizendo a quantidade de colunas.
+  Retorno: retorna 1 se a projecao é válida
+          returna 0 caso contrário.
+          no vetor char *, cada posicao i
+          possui 0 se a coluna i pertence a projecao
+          possui 1 caso contrário.
+*/
+int validaProj(Lista *,column *,int,char *);
+
+/*
+  Verifica se na clausula where esta sendo utilizado
+  alguma coluna que não é da tabela.
+*/
+int validaColsWhere(Lista *tok,column *colunas,int qtdColunas);
+
+/*
+  Memsma coisa que novoResWhere somente para string.
+*/
+inf_where *novoTokenWhere(char *str,int id);
+
+void printConsulta(Lista *p,Lista *l);
+
+/*
+  Retorna: ponteiro struct inf_where,
+  recebe: void *tk,int id
+  onde tk é uma regiao qualquer da memória,
+  id é um identificador de tipo de dado qualquer presente em Expressao.h
+*/
+inf_where *novoResWhere(void *tk,int id);
+
 ////
 int verifyFieldName(char **, int );
 ////

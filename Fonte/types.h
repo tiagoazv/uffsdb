@@ -1,3 +1,7 @@
+#ifndef FFUTILITY
+  #include "Utility.h"
+#endif
+
 #define FTYPES 1 // flag para identificar se types.h já foi incluída
 
 struct fs_objects { // Estrutura usada para carregar fs_objects.dat
@@ -48,6 +52,17 @@ typedef struct rc_insert {
     char   **fkColumn;          // Recebe o nome da coluna FK
 }rc_insert;
 
+typedef struct inf_where{
+  int id;
+  void *token;
+}inf_where;
+
+typedef struct inf_select{
+  char *tabela;
+  int tamTokens;
+  Lista *tok,*proj;
+}inf_select;
+
 typedef struct rc_parser {
     int         mode;           // Modo de operação (definido em /interface/parser.h)
     int         parentesis;     // Contador de parenteses abertos
@@ -58,14 +73,14 @@ typedef struct rc_parser {
     int         consoleFlag;   // Auxiliar para não imprimir duas vezes nome=#
 }rc_parser;
 
-typedef struct data_base {
+typedef struct data_base{
 	char 		valid;
-	char 		db_name[LEN_DB_NAME];
-	char 		db_directory[LEN_DB_NAME];
+	char 		db_name[LEN_DB_NAME_IO];
+	char 		db_directory[LEN_DB_NAME_IO];
 }data_base;
 
 typedef struct db_connected {
-	char db_directory[LEN_DB_NAME*2];
+	char db_directory[LEN_DB_NAME_IO];
     char *db_name;
     int conn_active;
 }db_connected;
