@@ -34,18 +34,56 @@ nodo* criaNodo(char* ind,int end){
 	novo->data[novo->quant_data] = (char *)malloc((strlen(ind)+1) * sizeof(char));
 	novo->endereco = (int*)malloc(ordem * sizeof(int));
 	novo->data[novo->quant_data] = ind;
-	novo->data[novo->quant_data] = ind;
 	novo->endereco[novo->quant_data] = end;
 	novo->quant_data++;	
 	return novo;
 
 }
 
-nodo* constroi_bplus(char* NomeTabela);
 nodo* busca_insere(nodo* raiz, char* ind, int end);
 void destroi_arvore(nodo*inicio);
 
-// insere os dados do nodo folha no arquivo de indices ta tabela
+nodo* constroi_bplus(char* nomeTabela){
+	FILE * new = NULL;
+	char le;
+	int le2 = 1;
+	int numero = 0;
+	char*palavra;
+	int cont = 0;
+	
+	new = fopen(nomeTabela,"r");
+	if(!new){
+		printf("Erro de abertura de arquivo\n");
+		fclose(new);
+		return NULL;
+	}
+	if(fread(&le, sizeof(char),1,new) == 0){
+		fclose(new);
+		return NULL;
+	}
+	fseek(new,0,SEEK_SET);
+	palavra = (char*)malloc(sizeof(char));
+	
+	while(!feof(new)){
+		while(le != '$'){
+			fread(&le, sizeof(char),1,new);
+			if(le != '$') {
+				palavra = (char *) realloc(palavra, (++cont) * sizeof(char));
+				palavra[cont-1] = le;
+			}
+		}
+		cont = 0;
+		
+		while(le2 != '#'){
+			fread(&le2, sizeof(int),1,new);
+			if(le2 != '#') {
+				numero = le2;
+			}
+		}
+	}
+}
+
+// insere os dados do nodo folha no arquivo de indices Da tabela
 void insere_arquivo(nodo*inicio,char* nomeTabela){
 	int i;
 	nodo*aux = NULL;
