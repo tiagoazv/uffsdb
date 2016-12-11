@@ -49,6 +49,7 @@ nodo* criaNodo() {
 nodo* busca_insere(nodo* raiz, char* ind, int end);
 void destroi_arvore(nodo*inicio);
 
+//constrói uma b+ dado o nome da tabela; retorna o nodo raiz
 nodo* constroi_bplus(char* nomeTabela){
 	FILE * new = NULL;
 	char le;
@@ -57,7 +58,7 @@ nodo* constroi_bplus(char* nomeTabela){
 	char*palavra;
 	int cont = 0;
 
-	new = fopen(nomeTabela,"r");
+	new = fopen(strcat(nomeTabela, ".dat"),"r");
 	if(!new){
 		printf("Erro de abertura de arquivo\n");
 		fclose(new);
@@ -79,20 +80,24 @@ nodo* constroi_bplus(char* nomeTabela){
 			}
 		}
 		cont = 0;
-
+		fread(&le2, sizeof(int), 1, new); //lê o endereço
+		fread(&le, sizeof(char), 1, new); //lê o caractere especial '#'
+		/*
+		lógica anterior (na nova considero que é certo ele ler um int)
 		while(le2 != '#'){
 			fread(&le2, sizeof(int),1,new);
 			if(le2 != '#') {
 				numero = le2;
 			}
 		}
+		*/
 	}
 }
 
 // insere os dados do nodo folha no arquivo de indices Da tabela
-void insere_arquivo(nodo*inicio,char* nomeTabela){
+void insere_arquivo(nodo* inicio, char* nomeTabela){
 	int i;
-	nodo*aux = NULL;
+	nodo *aux = NULL;
 	aux = inicio;
 	FILE * new = NULL;
 
@@ -104,7 +109,7 @@ void insere_arquivo(nodo*inicio,char* nomeTabela){
 	fseek(new,0,SEEK_SET);
 
 	while(aux){
-		i=0;
+		i = 0;
 		while(i < aux->quant_data){
 			fprintf(new,"%s",aux->data[aux->quant_data]);
 			fprintf(new,"%c",'$');
