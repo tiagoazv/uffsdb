@@ -34,6 +34,7 @@ nodo* criaNodo(char* ind,int end){
 	novo->data[novo->quant_data] = (char *)malloc((strlen(ind)+1) * sizeof(char));
 	novo->endereco = (int*)malloc(ordem * sizeof(int));
 	novo->data[novo->quant_data] = ind;
+	novo->data[novo->quant_data] = ind;
 	novo->endereco[novo->quant_data] = end;
 	novo->quant_data++;	
 	return novo;
@@ -42,8 +43,34 @@ nodo* criaNodo(char* ind,int end){
 
 nodo* constroi_bplus(char* NomeTabela);
 nodo* busca_insere(nodo* raiz, char* ind, int end);
-void insere_arquivo(nodo*inicio);
 void destroi_arvore(nodo*inicio);
+
+void insere_arquivo(nodo*inicio,char* nomeTabela){
+	int i;
+	nodo*aux = NULL;
+	aux = inicio;
+	FILE * new = NULL;
+	
+	new = fopen(nomeTabela,"w");
+	if(!new){
+		printf("Erro de abertura de arquivo\n");
+		return;
+	}
+	fseek(new,0,SEEK_SET);
+	
+	while(aux){
+		i=0;
+		while(i < aux->quant_data){
+			fprintf(new,"%s",aux->data[aux->quant_data]);
+			fprintf(new,"%c",'$');
+			fprintf(new,"%d",aux->endereco[aux->quant_data]);
+			fprintf(new,"%c",'#');
+		}
+		if(aux->prox == NULL) break;
+		aux = aux->prox;
+	}
+	fclose(new);
+}
 
 //insere o indice e o endereço no arquivo de indices
 void insere_indice(char* ind, char* nomeTabela, int end){
@@ -51,6 +78,6 @@ void insere_indice(char* ind, char* nomeTabela, int end){
 	aux = constroi_bplus(nomeTabela);// retorna raiz
 	aux = busca_insere(aux,ind,end); // retorna inicio da lista dos folhas
 	if(aux == NULL) aux = criaNodo(ind,end);//arvore vazia
-	insere_arquivo(aux);
+	insere_arquivo(aux,nomeTabela);
 	destroi_arvore(aux);
 }
