@@ -45,6 +45,7 @@ nodo* constroi_bplus(char* NomeTabela);
 nodo* busca_insere(nodo* raiz, char* ind, int end);
 void destroi_arvore(nodo*inicio);
 
+// insere os dados do nodo folha no arquivo de indices ta tabela
 void insere_arquivo(nodo*inicio,char* nomeTabela){
 	int i;
 	nodo*aux = NULL;
