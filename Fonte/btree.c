@@ -53,10 +53,10 @@ void destroi_arvore(nodo*inicio);
 nodo* constroi_bplus(char* nomeTabela){
 	FILE * new = NULL;
 	char le;
-	int le2 = 1;
-	int numero = 0;
+	int le2 = 0;
 	char*palavra;
 	int cont = 0;
+	nodo *arvore = NULL;
 
 	new = fopen(strcat(nomeTabela, ".dat"),"r");
 	if(!new){
@@ -82,15 +82,30 @@ nodo* constroi_bplus(char* nomeTabela){
 		cont = 0;
 		fread(&le2, sizeof(int), 1, new); //lê o endereço
 		fread(&le, sizeof(char), 1, new); //lê o caractere especial '#'
-		/*
-		lógica anterior (na nova considero que é certo ele ler um int)
-		while(le2 != '#'){
-			fread(&le2, sizeof(int),1,new);
-			if(le2 != '#') {
-				numero = le2;
-			}
+		
+		if(arvore = NULL){
+			arvore = criaNodo();
+			arvore = insereChaveEmNodo(palavra,le2,arvore);
 		}
-		*/
+		else if(arvore->quant_data< ordem-1){
+			arvore = insereChaveEmNodo(palavra,le2,arvore);
+		}
+		else {
+			arvore->prox = criaNodo();
+			arvore->prox = insereChaveEmNodo(palavra,le2,arvore->prox);
+			arvore->prox->ant = arvore;
+			if(arvore->pai == NULL)
+				arvore->prox->pai = criaNodo();
+				arvore->prox->pai = insereChaveEmNodo(palavra,le2,arvore->prox->pai);
+			}
+			else{
+				if(arvore->pai->quant_data< ordem - 1){
+					arvore->prox->pai = insereChaveEmNodo(palavra,le2,arvore->prox->pai);
+				}
+			
+		}
+			
+		
 	}
 }
 
