@@ -56,7 +56,32 @@ nodo* criaNodo() {
 	return novo;
 }
 
-nodo* busca_insere(nodo* raiz, char* ind, int end);
+/* Busca a posição de inserção de uma chave (ind) e um endereço (end) na árvore.
+ * Retorna um ponteiro para o índice denso (lista de folhas). */
+nodo* busca_insere(nodo* raiz, char* ind, int end) {
+	int i;
+	nodo* aux = raiz;
+	if (!raiz) return NULL; //arvore vazia
+	while (aux->filhos != NULL) { //desce na arvore até chegar na folha
+		for (i = 0; i < aux->quant_data; i++) { //anda dentro do nodo
+			if (strcmp(ind, aux->data[i]) < 0) { //se é menor que a chave na posição i
+				aux = aux->filhos[i]; //desce para a esquerda
+				break;
+			}
+		}
+		//se não é menor que nenhum valor do nodo, desce pelo ponteiro mais à direita
+		if (i == aux->quant_data) {
+			aux = aux->filhos[quant_data];
+		}
+	}
+	//OBS: abordagem ignora se realmente há espaço no nodo para a inserção. Motivos:
+	//1. A árvore é destruída após a operação (SELECT, INSERT...)
+	//2. O retorno desta função é um ponteiro para o indice denso, e não para a árvore de maneira organizada.
+	aux = insereChaveEmNodoFolha(ind, end, aux);
+	while (aux->ant) aux = aux->ant; //retorna ao inicio do indice denso
+	return aux;
+}
+
 void destroi_arvore(nodo*inicio);
 
 //constrói uma b+ dado o nome da tabela; retorna o nodo raiz
