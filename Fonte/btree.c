@@ -26,13 +26,23 @@ int inicializa_indice(char* nomeTabela){
 
 /* Insere os valores da chave (ind) e do endereço da tupla no arquivo de dados
  * (end) em um nodo (n) */
-nodo* insereChaveEmNodo(char* ind, int end, nodo* n){
-	n->data = (char**)malloc(ordem * sizeof(char));
+nodo* insereChaveEmNodoFolha(char* ind, int end, nodo* n){
+	n->data = (char**)malloc(ordem * sizeof(char**));
 	n->data[novo->quant_data] = (char *)malloc((strlen(ind)+1) * sizeof(char));
-	n->endereco = (int*)malloc(ordem * sizeof(int));
 	n->data[novo->quant_data] = ind;
+	n->endereco = (int*)malloc(ordem * sizeof(int));
 	n->endereco[novo->quant_data] = end;
 	n->quant_data++;
+	return n;
+}
+
+/* Insere unicamente o valor da chave em um nodo interno (n) */
+nodo* insereChaveEmNodoInterno(char* ind, nodo* n) {
+	n->data = (char**)malloc(ordem * sizeof(char**));
+	n->data[novo->quant_data] = (char *)malloc((strlen(ind)+1) * sizeof(char));
+	n->data[novo->quant_data] = ind;
+	n->quant_data++;
+	n->filhos = (nodo**)realloc(sizeof(nodo**) * (n->quant_data+1)); //aumenta o numero de ponteiros para filhos
 	return n;
 }
 
@@ -56,7 +66,8 @@ nodo* constroi_bplus(char* nomeTabela){
 	int le2 = 0;
 	char*palavra;
 	int cont = 0;
-	nodo *arvore = NULL;
+	nodo *aux = NULL;
+	nodo *raiz = NULL;
 
 	new = fopen(strcat(nomeTabela, ".dat"),"r");
 	if(!new){
@@ -69,7 +80,7 @@ nodo* constroi_bplus(char* nomeTabela){
 		return NULL;
 	}
 	fseek(new,0,SEEK_SET);
-	palavra = (char*)malloc(sizeof(char));
+	palavra = (char*)malloc(sizeof(char*));
 
 	while(!feof(new)){
 		while(le != '$'){
@@ -82,31 +93,41 @@ nodo* constroi_bplus(char* nomeTabela){
 		cont = 0;
 		fread(&le2, sizeof(int), 1, new); //lê o endereço
 		fread(&le, sizeof(char), 1, new); //lê o caractere especial '#'
-		
-		if(arvore = NULL){
-			arvore = criaNodo();
-			arvore = insereChaveEmNodo(palavra,le2,arvore);
+
+		if(aux == NULL){ //árvore está vazia
+			aux = criaNodo();
+			aux = insereChaveEmNodoFolha(palavra,le2,aux);
+			raiz = aux;
 		}
-		else if(arvore->quant_data< ordem-1){
-			arvore = insereChaveEmNodo(palavra,le2,arvore);
+		else if(aux->quant_data < ordem-1){ //há espaço no nodo atual
+			aux = insereChaveEmNodoFolha(palavra,le2,aux);
 		}
-		else {
-			arvore->prox = criaNodo();
-			arvore->prox = insereChaveEmNodo(palavra,le2,arvore->prox);
-			arvore->prox->ant = arvore;
-			if(arvore->pai == NULL)
-				arvore->prox->pai = criaNodo();
-				arvore->prox->pai = insereChaveEmNodo(palavra,le2,arvore->prox->pai);
+		else { //nodo folha atual estourou a capacidade
+			aux->prox = criaNodo();
+			aux->prox = insereChaveEmNodoFolha(palavra,le2,aux->prox);
+			aux->prox->ant = aux;
+			if(aux->pai == NULL) { //se ainda não há mais que um nível na árvore
+				aux->prox->pai = criaNodo();
+				aux->prox->pai = insereChaveEmNodoInterno(palavra,aux->prox->pai);
+				aux->prox->pai->filhos[quant_data-1] = aux; //reposiciona os ponteiros para o filho a esquerda
+				aux->prox->pai->filhos[quant_data] = aux->prox; //filho a direita
+				raiz = aux->prox->pai; //reposiciona o ponteiro para a nova raiz
 			}
 			else{
-				if(arvore->pai->quant_data< ordem - 1){
-					arvore->prox->pai = insereChaveEmNodo(palavra,le2,arvore->prox->pai);
+				if(aux->pai->quant_data < ordem - 1){ //há espaço no pai para a colocação da chave do novo nodo
+					aux->pai = insereChaveEmNodoInterno(palavra,aux->prox->pai);
+					aux->prox->pai = aux->pai;
+					aux->pai->filhos[quant_data] = aux->prox;
 				}
-			
-		}
-			
-		
+				else { //estourou a capacidade do nodo interno pai
+
+				}
+
+			}
+
+			aux = aux->prox;
 	}
+	return raiz;
 }
 
 // insere os dados do nodo folha no arquivo de indices Da tabela
