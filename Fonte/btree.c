@@ -15,6 +15,18 @@ typedef struct nodo{
 	int quant_data;
 } nodo;
 
+//cria novo nodo vazio
+nodo* criaNodo() {
+	nodo * novo = NULL;
+	novo = (nodo*)malloc(sizeof(nodo));
+	novo->filhos = NULL;
+	novo->pai = novo->prox = novo->ant = NULL;
+	novo->data = NULL;
+	novo->endereco = NULL;
+	novo->quant_data = 0;
+	return novo;
+}
+
 //quando o usuário cria uma tabela, está função deve ser chamada para criar o arquivo de indice.
 int inicializa_indice(char* nomeTabela){
 	FILE * new_indice = NULL;
@@ -28,10 +40,10 @@ int inicializa_indice(char* nomeTabela){
  * (end) em um nodo (n) */
 nodo* insereChaveEmNodoFolha(char* ind, int end, nodo* n){
 	n->data = (char**)malloc(ordem * sizeof(char**));
-	n->data[novo->quant_data] = (char *)malloc((strlen(ind)+1) * sizeof(char));
-	n->data[novo->quant_data] = ind;
+	n->data[n->quant_data] = (char *)malloc((strlen(ind)+1) * sizeof(char));
+	n->data[n->quant_data] = ind;
 	n->endereco = (int*)malloc(ordem * sizeof(int));
-	n->endereco[novo->quant_data] = end;
+	n->endereco[n->quant_data] = end;
 	n->quant_data++;
 	return n;
 }
@@ -39,21 +51,11 @@ nodo* insereChaveEmNodoFolha(char* ind, int end, nodo* n){
 /* Insere unicamente o valor da chave em um nodo interno (n) */
 nodo* insereChaveEmNodoInterno(char* ind, nodo* n) {
 	n->data = (char**)malloc(ordem * sizeof(char**));
-	n->data[novo->quant_data] = (char *)malloc((strlen(ind)+1) * sizeof(char));
-	n->data[novo->quant_data] = ind;
+	n->data[n->quant_data] = (char *)malloc((strlen(ind)+1) * sizeof(char));
+	n->data[n->quant_data] = ind;
 	n->quant_data++;
-	n->filhos = (nodo**)realloc(sizeof(nodo**) * (n->quant_data+1)); //aumenta o numero de ponteiros para filhos
+	n->filhos = (nodo**)realloc(n->filhos, sizeof(nodo**) * (n->quant_data+1)); //aumenta o numero de ponteiros para filhos
 	return n;
-}
-
-//cria novo nodo vazio
-nodo* criaNodo() {
-	nodo * novo = NULL;
-	novo = (nodo*)malloc(sizeof(nodo));
-	novo->filhos = novo->pai = novo->prox = novo->ant = NULL;
-	novo->data = novo->endereco = NULL;
-	novo->quant_data = 0;
-	return novo;
 }
 
 /* Busca a posição de inserção de uma chave (ind) e um endereço (end) na árvore.
@@ -71,7 +73,7 @@ nodo* busca_insere(nodo* raiz, char* ind, int end) {
 		}
 		//se não é menor que nenhum valor do nodo, desce pelo ponteiro mais à direita
 		if (i == aux->quant_data) {
-			aux = aux->filhos[quant_data];
+			aux = aux->filhos[aux->quant_data];
 		}
 	}
 	//OBS: abordagem ignora se realmente há espaço no nodo para a inserção. Motivos:
@@ -146,26 +148,26 @@ nodo* constroi_bplus(char* nomeTabela){
 			aux->prox = criaNodo();
 			aux->prox = insereChaveEmNodoFolha(palavra,le2,aux->prox);
 			aux->prox->ant = aux;
-			if(aux->pai == NULL) { //se ainda não há mais que um nível na árvore
+			if(aux->pai == NULL) { //se não há mais que um nível na árvore
 				aux->prox->pai = criaNodo();
 				aux->prox->pai = insereChaveEmNodoInterno(palavra,aux->prox->pai);
-				aux->prox->pai->filhos[quant_data-1] = aux; //reposiciona os ponteiros para o filho a esquerda
-				aux->prox->pai->filhos[quant_data] = aux->prox; //filho a direita
+				aux->prox->pai->filhos[aux->quant_data - 1] = aux; //reposiciona os ponteiros para o filho a esquerda
+				aux->prox->pai->filhos[aux->quant_data] = aux->prox; //filho a direita
 				raiz = aux->prox->pai; //reposiciona o ponteiro para a nova raiz
 			}
 			else{
 				if(aux->pai->quant_data < ordem - 1){ //há espaço no pai para a colocação da chave do novo nodo
 					aux->pai = insereChaveEmNodoInterno(palavra,aux->prox->pai);
 					aux->prox->pai = aux->pai;
-					aux->pai->filhos[quant_data] = aux->prox;
+					aux->pai->filhos[aux->quant_data] = aux->prox;
 				}
 				else { //estourou a capacidade do nodo interno pai
 
 				}
 
 			}
-
-			aux = aux->prox;
+		}
+		aux = aux->prox;
 	}
 	return raiz;
 }
