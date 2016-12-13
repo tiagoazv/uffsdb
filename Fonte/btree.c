@@ -82,7 +82,22 @@ nodo* busca_insere(nodo* raiz, char* ind, int end) {
 	return aux;
 }
 
-void destroi_arvore(nodo*inicio);
+//destruição recursiva dos nodos da árvore
+void destroi_arvore(nodo* n) {
+	int i;
+	if(n->filhos) {//desce em profundidade
+		for(i = 0; i < n->quant_data; i++)
+			destroi_arvore(n->filhos[i]);
+	}
+	free(n->data);
+	if(n->prox) { //se é nodo folha
+		n->prox->ant = NULL;
+		free(n->endereco);
+	} else { //se é nodo interno
+		free(n->filhos);
+	}
+	free(n);
+}
 
 //constrói uma b+ dado o nome da tabela; retorna o nodo raiz
 nodo* constroi_bplus(char* nomeTabela){
@@ -177,7 +192,6 @@ void insere_arquivo(nodo* inicio, char* nomeTabela){
 			fprintf(new,"%d",aux->endereco[aux->quant_data]);
 			fprintf(new,"%c",'#');
 		}
-		if(aux->prox == NULL) break;
 		aux = aux->prox;
 	}
 	fclose(new);
