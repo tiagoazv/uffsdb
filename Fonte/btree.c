@@ -30,8 +30,13 @@ nodo* criaNodo() {
 //quando o usuário cria uma tabela, está função deve ser chamada para criar o arquivo de indice.
 int inicializa_indice(char* nomeTabela){
 	FILE * new_indice = NULL;
-	new_indice = fopen(strcat(nomeTabela, ".dat"),"a");
-	if(new_indice == NULL)return 0;
+	char *concatena;
+	concatena = (char*)malloc(sizeof(char)*(strlen(nomeTabela) + strlen(".dat")));
+	strcpy(concatena,nomeTabela);
+	strcat(concatena,".dat");
+	new_indice = fopen(concatena, "a");
+	free(concatena);
+	if(new_indice == NULL) return 0;
 	fclose(new_indice);
 	return 1;
 }
@@ -226,6 +231,5 @@ void insere_indice(char* ind, char* nomeTabela, int end){
 	if(aux == NULL) aux = criaNodo(ind,end);//arvore vazia
 	insere_arquivo(aux,nomeTabela);
 	destroi_arvore(aux);
-	
-}
 
+}
