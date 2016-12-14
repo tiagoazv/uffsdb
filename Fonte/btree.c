@@ -27,15 +27,21 @@ nodo* criaNodo() {
 	return novo;
 }
 
-//quando o usuário cria uma tabela, está função deve ser chamada para criar o arquivo de indice.
-int inicializa_indice(char* nomeTabela){
-	FILE * new_indice = NULL;
+//recebe o nome de uma tabela, concatena a extensão .dat e retorna essa junção.
+char* concatena_extensao(char* nomeTabela) {
 	char *concatena;
 	concatena = (char*)malloc(sizeof(char)*(strlen(nomeTabela) + strlen(".dat")));
 	strcpy(concatena,nomeTabela);
 	strcat(concatena,".dat");
-	new_indice = fopen(concatena, "a");
-	free(concatena);
+	return concatena;
+}
+
+//quando o usuário cria uma tabela, está função deve ser chamada para criar o arquivo de indice.
+int inicializa_indice(char* nomeTabela){
+	FILE * new_indice = NULL;
+	char* nomeArquivo = concatena_extensao(nomeTabela);
+	new_indice = fopen(nomeArquivo, "a");
+	free(nomeArquivo);
 	if(new_indice == NULL) return 0;
 	fclose(new_indice);
 	return 1;
@@ -111,14 +117,16 @@ nodo* constroi_bplus(char* nomeTabela){
 	FILE * new = NULL;
 	char le;
 	int le2 = 0;
-	char*palavra;
+	char* palavra;
 	int cont = 0;
 	nodo *aux = NULL;
 	nodo *raiz = NULL;
 	nodo *aux2 = NULL;
 	nodo *aux3 = NULL;
-
-	new = fopen(strcat(nomeTabela, ".dat"),"r");
+	
+	char* nomeArquivo = concatena_extensao(nomeTabela);
+	new = fopen(nomeArquivo,"r");
+	free(nomeArquivo);
 	if(!new){
 		printf("Erro de abertura de arquivo\n");
 		fclose(new);
@@ -202,8 +210,9 @@ void insere_arquivo(nodo* inicio, char* nomeTabela){
 	nodo *aux = NULL;
 	aux = inicio;
 	FILE * new = NULL;
-
-	new = fopen(strcat(nomeTabela, ".dat"),"w");
+	char* nomeArquivo = concatena_extensao(nomeTabela);
+	new = fopen(nomeArquivo,"w");
+	free(nomeArquivo);
 	if(!new){
 		printf("Erro de abertura de arquivo\n");
 		return;
