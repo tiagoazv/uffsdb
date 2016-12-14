@@ -111,6 +111,7 @@ nodo* constroi_bplus(char* nomeTabela){
 	nodo *aux = NULL;
 	nodo *raiz = NULL;
 	nodo *aux2 = NULL;
+	nodo *aux3 = NULL;
 
 	new = fopen(strcat(nomeTabela, ".dat"),"r");
 	if(!new){
@@ -140,9 +141,9 @@ nodo* constroi_bplus(char* nomeTabela){
 		if(aux == NULL){ //árvore está vazia
 			aux = criaNodo();
 			aux = insereChaveEmNodoFolha(palavra,le2,aux);
-			raiz = aux;
+			aux3 = aux;
 		}
-		else if(aux->quant_data < ordem-1){ //há espaço no nodo atual
+ 		else if(aux->quant_data < ordem-1){ //há espaço no nodo atual
 			aux = insereChaveEmNodoFolha(palavra,le2,aux);
 		}
 		else { //nodo folha atual estourou a capacidade
@@ -154,7 +155,6 @@ nodo* constroi_bplus(char* nomeTabela){
 				aux->prox->pai = insereChaveEmNodoInterno(palavra,aux->prox->pai);
 				aux->prox->pai->filhos[aux->prox->pai->quant_data - 1] = aux; //reposiciona os ponteiros para o filho a esquerda
 				aux->prox->pai->filhos[aux->prox->pai->quant_data] = aux->prox; //filho a direita
-				raiz = aux->prox->pai; //reposiciona o ponteiro para a nova raiz
 			}
 			else{
 				if(aux->pai->quant_data < ordem - 1){ //há espaço no pai para a colocação da chave do novo nodo
@@ -164,20 +164,29 @@ nodo* constroi_bplus(char* nomeTabela){
 				}
 				else { //estourou a capacidade do nodo interno pai
 					aux2 = aux->prox;
-					while(aux->pai){
+					while(aux){
 						aux2->pai = criaNodo();
-						aux2->pai = insereChaveEmNodoInterno(palavra,aux2->pai);=
+						aux2->pai = insereChaveEmNodoInterno(palavra,aux2->pai);
 						aux2->pai->filhos[aux2->pai->quant_data-1] = aux;
 						aux2->pai->filhos[aux2->pai->quant_data] = aux2;
 						aux = aux->pai;
 						aux2 = aux2->pai;
 						palavra = aux->data[aux->quant_data];
-
+						if(aux){
+							free(aux->data[aux->quant_data-1]);
+							aux->endereco[aux->quant_data-1] = 0;
+							aux->quant_data--;
+						}
+					}
 				}
 
 			}
 		}
 		aux = aux->prox;
+	}
+	raiz = aux3;
+	while(raiz->pai){
+		raiz = raiz->pai;
 	}
 	return raiz;
 }
@@ -204,7 +213,7 @@ void insere_arquivo(nodo* inicio, char* nomeTabela){
 			fprintf(new,"%d",aux->endereco[aux->quant_data]);
 			fprintf(new,"%c",'#');
 		}
-		aux = aux->prox;g
+		aux = aux->prox;
 	}
 	fclose(new);
 }
@@ -217,4 +226,6 @@ void insere_indice(char* ind, char* nomeTabela, int end){
 	if(aux == NULL) aux = criaNodo(ind,end);//arvore vazia
 	insere_arquivo(aux,nomeTabela);
 	destroi_arvore(aux);
+	
 }
+
