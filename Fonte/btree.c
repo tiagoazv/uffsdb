@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define ordem 2
+#define ordem 3
 
 /**
 * estrutura do nodo da arvore b+
@@ -41,6 +41,7 @@ int inicializa_indice(char* nomeTabela){
 	FILE * new_indice = NULL;
 	char* nomeArquivo = concatena_extensao(nomeTabela);
 	new_indice = fopen(nomeArquivo, "a");
+	fprintf(new_indice,"%c",'@');
 	free(nomeArquivo);
 	if(new_indice == NULL) return 0;
 	fclose(new_indice);
@@ -132,7 +133,8 @@ nodo* constroi_bplus(char* nomeTabela){
 		fclose(new);
 		return NULL;
 	}
-	if(fread(&le, sizeof(char),1,new) == 0){
+	fread(&le, sizeof(char),1,new);
+	if(le == '@'){
 		fclose(new);
 		return NULL;
 	}
@@ -223,10 +225,11 @@ void insere_arquivo(nodo* inicio, char* nomeTabela){
 	while(aux){
 		i = 0;
 		while(i < aux->quant_data){
-			fprintf(new,"%s",aux->data[aux->quant_data]);
+			fprintf(new,"%s",aux->data[aux->quant_data-1]);
 			fprintf(new,"%c",'$');
-			fprintf(new,"%d",aux->endereco[aux->quant_data]);
+			fprintf(new,"%d",aux->endereco[aux->quant_data-1]);
 			fprintf(new,"%c",'#');
+			i++;
 		}
 		aux = aux->prox;
 	}
@@ -238,7 +241,10 @@ void insere_indice(char* ind, char* nomeTabela, int end){
 	nodo *aux;
 	aux = constroi_bplus(nomeTabela);// retorna raiz
 	aux = busca_insere(aux,ind,end); // retorna inicio da lista dos folhas
-	if(aux == NULL) aux = criaNodo(ind,end);//arvore vazia
+	if(aux == NULL){
+		 aux = criaNodo();//arvore vazia
+		 aux = insereChaveEmNodoFolha(ind,end,aux);
+	}
 	insere_arquivo(aux,nomeTabela);
 	destroi_arvore(aux);
 
