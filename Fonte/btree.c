@@ -123,7 +123,7 @@ nodo* constroi_bplus(char* nomeTabela){
 	nodo *raiz = NULL;
 	nodo *aux2 = NULL;
 	nodo *aux3 = NULL;
-	
+
 	char* nomeArquivo = concatena_extensao(nomeTabela);
 	new = fopen(nomeArquivo,"r");
 	free(nomeArquivo);
@@ -168,6 +168,7 @@ nodo* constroi_bplus(char* nomeTabela){
 				aux->prox->pai = insereChaveEmNodoInterno(palavra,aux->prox->pai);
 				aux->prox->pai->filhos[aux->prox->pai->quant_data - 1] = aux; //reposiciona os ponteiros para o filho a esquerda
 				aux->prox->pai->filhos[aux->prox->pai->quant_data] = aux->prox; //filho a direita
+				aux->pai = aux->prox->pai;
 			}
 			else{
 				if(aux->pai->quant_data < ordem - 1){ //há espaço no pai para a colocação da chave do novo nodo
@@ -195,7 +196,7 @@ nodo* constroi_bplus(char* nomeTabela){
 
 			}
 		}
-		aux = aux->prox;
+		if (aux->prox) aux = aux->prox;
 	}
 	raiz = aux3;
 	while(raiz->pai){
