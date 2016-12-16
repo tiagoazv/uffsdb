@@ -22,7 +22,7 @@ nodo* criaNodo() {
 	novo->filhos = NULL;
 	novo->pai = novo->prox = novo->ant = NULL;
 	novo->data = NULL;
-	novo->endereco = NULL;
+	novo->endereco= NULL;
 	novo->quant_data = 0;
 	return novo;
 }
@@ -50,7 +50,7 @@ int inicializa_indice(char* nomeTabela){
 
 /* Insere os valores da chave (ind) e do endereço da tupla no arquivo de dados
  * (end) em um nodo (n) */
-nodo* insereChaveEmNodoFolha(char* ind, int end, nodo* n){
+nodo* insereChaveEmNodoFolha(char* ind, int end, nodo *n){
 	n->data = (char**)malloc(ordem * sizeof(char**));
 	n->data[n->quant_data] = (char *)malloc((strlen(ind)+1) * sizeof(char));
 	n->data[n->quant_data] = ind;
@@ -124,6 +124,7 @@ nodo* constroi_bplus(char* nomeTabela){
 	nodo *raiz = NULL;
 	nodo *aux2 = NULL;
 	nodo *aux3 = NULL;
+	int flag = 0;
 
 	char* nomeArquivo = concatena_extensao(nomeTabela);
 	new = fopen(nomeArquivo,"r");
@@ -140,7 +141,6 @@ nodo* constroi_bplus(char* nomeTabela){
 	}
 	fseek(new,0,SEEK_SET);
 	palavra = (char*)malloc(sizeof(char*));
-
 	while(!feof(new)){
 		while(le != '$'){
 			fread(&le, sizeof(char),1,new);
@@ -173,29 +173,35 @@ nodo* constroi_bplus(char* nomeTabela){
 				aux->pai = aux->prox->pai;
 			}
 			else{
-				if(aux->pai->quant_data < ordem - 1){ //há espaço no pai para a colocação da chave do novo nodo
-					aux->pai = insereChaveEmNodoInterno(palavra,aux->prox->pai);
-					aux->prox->pai = aux->pai;
-					aux->pai->filhos[aux->pai->quant_data] = aux->prox;
-				}
-				else { //estourou a capacidade do nodo interno pai
-					aux2 = aux->prox;
-					while(aux){
+				while(aux->pai){
+					if(aux->pai->quant_data < ordem - 1){ //há espaço no pai para a colocação da chave do novo nodo
+						aux->pai = insereChaveEmNodoInterno(palavra,aux->pai);
+						aux->prox->pai = aux->pai;
+						aux->pai->filhos[aux->pai->quant_data] = aux->prox;
+						flag= 1;
+						aux = aux->pai;
+					}
+					else { //estourou a capacidade do nodo interno pai
+						aux2 = aux->prox;
 						aux2->pai = criaNodo();
 						aux2->pai = insereChaveEmNodoInterno(palavra,aux2->pai);
 						aux2->pai->filhos[aux2->pai->quant_data-1] = aux;
 						aux2->pai->filhos[aux2->pai->quant_data] = aux2;
 						aux = aux->pai;
 						aux2 = aux2->pai;
-						palavra = aux->data[aux->quant_data];
-						if(aux){
-							free(aux->data[aux->quant_data-1]);
-							aux->endereco[aux->quant_data-1] = 0;
-							aux->quant_data--;
-						}
+						palavra = aux->data[aux->quant_data-1];
+						free(aux->data[aux->quant_data-1]);
+						aux->endereco[aux->quant_data-1] = 0;
+						aux->quant_data--;
 					}
 				}
-
+				if(flag == 0){
+					aux2->pai = criaNodo();
+					aux2->pai = insereChaveEmNodoInterno(palavra,aux2->pai);
+					aux2->pai->filhos[aux2->pai->quant_data-1] = aux;
+					aux2->pai->filhos[aux2->pai->quant_data] = aux2;
+				}
+				flag = 0;
 			}
 		}
 		if (aux->prox) aux = aux->prox;
@@ -221,13 +227,12 @@ void insere_arquivo(nodo* inicio, char* nomeTabela){
 		return;
 	}
 	fseek(new,0,SEEK_SET);
-
 	while(aux){
 		i = 0;
 		while(i < aux->quant_data){
-			fprintf(new,"%s",aux->data[aux->quant_data-1]);
+			fprintf(new,"%s",aux->data[i]);
 			fprintf(new,"%c",'$');
-			fprintf(new,"%d",aux->endereco[aux->quant_data-1]);
+			fprintf(new,"%d",aux->endereco[i]);
 			fprintf(new,"%c",'#');
 			i++;
 		}
@@ -249,3 +254,13 @@ void insere_indice(char* ind, char* nomeTabela, int end){
 	destroi_arvore(aux);
 
 }
+
+
+int main(){
+	inicializa_indice("tabela1");
+	insere_indice("um","tabela1",1);
+	insere_indice("dois","tabela1",2);
+
+	return 0;
+}
+	
