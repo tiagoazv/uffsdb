@@ -2,8 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define ordem 2
-
+#define ordem 3
 /**
 * estrutura do nodo da arvore b+
 **/
@@ -122,6 +121,7 @@ nodo* constroi_bplus(char* nomeTabela){
 	nodo *raiz = NULL;
 	nodo *aux2 = NULL;
 	nodo *aux3 = NULL;
+	nodo *aux4 = NULL;
 	int flag = 0;
 
 	char* nomeArquivo = concatena_extensao(nomeTabela);
@@ -161,6 +161,7 @@ nodo* constroi_bplus(char* nomeTabela){
 		}
  		else if(aux->quant_data < ordem-1){ //há espaço no nodo atual
 			aux = insereChaveEmNodoFolha(palavra,le2,aux);
+			printf("%d\n",aux->endereco[0]);
 		}
 		else { //nodo folha atual estourou a capacidade
 			aux->prox = criaNodo();
@@ -174,13 +175,14 @@ nodo* constroi_bplus(char* nomeTabela){
 				aux->pai = aux->prox->pai;
 			}
 			else{
+				flag=0;
+				aux4 = aux;
 				while(aux->pai){
 					if(aux->pai->quant_data < ordem - 1){ //há espaço no pai para a colocação da chave do novo nodo
 						aux->pai = insereChaveEmNodoInterno(palavra,aux->pai);
 						aux->prox->pai = aux->pai;
 						aux->pai->filhos[aux->pai->quant_data] = aux->prox;
 						flag= 1;
-						aux = aux->pai;
 						break;
 					}
 					else { //estourou a capacidade do nodo interno pai
@@ -192,8 +194,6 @@ nodo* constroi_bplus(char* nomeTabela){
 						aux = aux->pai;
 						aux2 = aux2->pai;
 						palavra = aux->data[aux->quant_data-1];
-						free(aux->data[aux->quant_data-1]);
-						aux->endereco[aux->quant_data-1] = 0;
 						aux->quant_data--;
 					}
 				}
@@ -202,10 +202,12 @@ nodo* constroi_bplus(char* nomeTabela){
 					aux2->pai = insereChaveEmNodoInterno(palavra,aux2->pai);
 					aux2->pai->filhos[aux2->pai->quant_data-1] = aux;
 					aux2->pai->filhos[aux2->pai->quant_data] = aux2;
+					aux->pai = aux2->pai;
 				}
 				flag = 0;
 			}
 		}
+		if(aux4)aux = aux4;
 		if (aux->prox) aux = aux->prox;
 		fread(&le, sizeof(char), 1, new);// tenta ler o fim do arquivo
 		if(le == '&') break;
@@ -265,28 +267,33 @@ void insere_indice(char* ind, char* nomeTabela, int end){
 
 }
 
-void imprime(nodo* n) {
-	imprime_arvore(n, 1);
-}
-
 void imprime_arvore(nodo* n, int nivel) {
 	int i;
 	if (!n) return;
 	for (i = 0; i < nivel; i++) printf("*");
 	for (i = 0; i < n->quant_data; i++) {
 		if (i) printf(" | ");
-		printf("%s");
+		printf("%s",n->data[i]);
 	}
 	printf("\n");
 	for (i = 0; i <= n->quant_data; i++)
 		imprime_arvore(n->filhos[i], nivel++);
 }
 
+void imprime(nodo* n) {
+	imprime_arvore(n, 1);
+}
+
 int main(){
 	inicializa_indice("tabela1");
-	insere_indice("um","tabela1",1);
-	insere_indice("dois","tabela1",2);
-	insere_indice("tres","tabela1",3);
+	insere_indice("1","tabela1",1);
+	insere_indice("2","tabela1",2);
+	insere_indice("3","tabela1",3);
+	insere_indice("4","tabela1",4);
+	insere_indice("5","tabela1",5);
+	insere_indice("6","tabela1",6);
+	insere_indice("7","tabela1",7);
+	insere_indice("8","tabela1",8);
 
 	return 0;
 }
