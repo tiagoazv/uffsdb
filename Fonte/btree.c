@@ -38,10 +38,11 @@ char* concatena_extensao(char* nomeTabela) {
 
 //quando o usuário cria uma tabela, está função deve ser chamada para criar o arquivo de indice.
 int inicializa_indice(char* nomeTabela){
+	char arroba;
 	FILE * new_indice = NULL;
 	char* nomeArquivo = concatena_extensao(nomeTabela);
 	new_indice = fopen(nomeArquivo, "a");
-	fprintf(new_indice,"%c",'@');
+	fwrite(&arroba, sizeof(char), 1, new_indice);
 	free(nomeArquivo);
 	if(new_indice == NULL) return 0;
 	fclose(new_indice);
@@ -89,7 +90,6 @@ nodo* busca_insere(nodo* raiz, char* ind, int end) {
 	//1. A árvore é destruída após a operação (SELECT, INSERT...)
 	//2. O retorno desta função é um ponteiro para o indice denso, e não para a árvore de maneira organizada.
 	aux = insereChaveEmNodoFolha(ind, end, aux);
-	if(aux->quant_data == 3)printf("%s\n",aux->data[1]);
 	while (aux->ant) aux = aux->ant; //retorna ao inicio do indice denso
 	return aux;
 }
@@ -204,7 +204,7 @@ nodo* constroi_bplus(char* nomeTabela){
 			}
 		}
 		if (aux->prox) aux = aux->prox;
-		
+
 		fread(&le, sizeof(char), 1, new);// tenta ler o fim do arquivo
 		if(le == '&') break;
 		fseek(new,-1,SEEK_CUR);
@@ -271,4 +271,3 @@ int main(){
 
 	return 0;
 }
-	
