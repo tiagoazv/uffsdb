@@ -122,6 +122,8 @@ nodo* constroi_bplus(char* nomeTabela){
 	nodo *aux2 = NULL;
 	nodo *aux3 = NULL;
 	nodo *aux4 = NULL;
+	nodo *aux5 = NULL;
+	
 	int flag = 0;
 
 	char* nomeArquivo = concatena_extensao(nomeTabela);
@@ -161,7 +163,6 @@ nodo* constroi_bplus(char* nomeTabela){
 		}
  		else if(aux->quant_data < ordem-1){ //há espaço no nodo atual
 			aux = insereChaveEmNodoFolha(palavra,le2,aux);
-			printf("%d\n",aux->endereco[0]);
 		}
 		else { //nodo folha atual estourou a capacidade
 			aux->prox = criaNodo();
@@ -177,21 +178,23 @@ nodo* constroi_bplus(char* nomeTabela){
 			else{
 				flag=0;
 				aux4 = aux;
+				aux2 = aux->prox;
 				while(aux->pai){
 					if(aux->pai->quant_data < ordem - 1){ //há espaço no pai para a colocação da chave do novo nodo
 						aux->pai = insereChaveEmNodoInterno(palavra,aux->pai);
 						aux->prox->pai = aux->pai;
-						aux->pai->filhos[aux->pai->quant_data] = aux->prox;
+						aux->pai->filhos[aux->pai->quant_data] = aux2;
 						flag= 1;
 						break;
 					}
 					else { //estourou a capacidade do nodo interno pai
-						aux2 = aux->prox;
 						aux2->pai = criaNodo();
 						aux2->pai = insereChaveEmNodoInterno(palavra,aux2->pai);
 						aux2->pai->filhos[aux2->pai->quant_data-1] = aux;
 						aux2->pai->filhos[aux2->pai->quant_data] = aux2;
+						aux5 = aux;
 						aux = aux->pai;
+						aux5->pai = aux2->pai;
 						aux2 = aux2->pai;
 						palavra = aux->data[aux->quant_data-1];
 						aux->quant_data--;
@@ -294,6 +297,10 @@ int main(){
 	insere_indice("6","tabela1",6);
 	insere_indice("7","tabela1",7);
 	insere_indice("8","tabela1",8);
+	insere_indice("9","tabela1",9);
+	insere_indice("A","tabela1",10);
+	insere_indice("B","tabela1",11);
+	insere_indice("C","tabela1",12);
 
 	return 0;
 }
