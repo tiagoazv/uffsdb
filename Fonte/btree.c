@@ -21,7 +21,7 @@ nodo* criaNodo() {
 	novo = (nodo*)malloc(sizeof(nodo));
 	novo->filhos = NULL;
 	novo->pai = novo->prox = novo->ant = NULL;
-	novo->data = (char**)malloc(ordem * sizeof(char**));
+	novo->data = (char**)malloc(ordem * sizeof(char*));
 	novo->endereco = (int*)malloc(ordem * sizeof(int));
 	novo->quant_data = 0;
 	return novo;
@@ -138,7 +138,7 @@ nodo* constroi_bplus(char* nomeTabela){
 		return NULL;
 	}
 	fseek(new,0,SEEK_SET);
-	palavra = (char*)malloc(sizeof(char*));
+	palavra = (char*)malloc(sizeof(char));
 	while(1){
 		while(le != '$'){
 			fread(&le, sizeof(char),1,new);
