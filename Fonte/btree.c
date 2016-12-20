@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define ordem 3
+#define ordem 10
 
 /**
 * estrutura do nodo da arvore b+
@@ -21,8 +21,8 @@ nodo* criaNodo() {
 	novo = (nodo*)malloc(sizeof(nodo));
 	novo->filhos = NULL;
 	novo->pai = novo->prox = novo->ant = NULL;
-	novo->data = NULL;
-	novo->endereco= NULL;
+	novo->data = (char**)malloc(ordem * sizeof(char**));
+	novo->endereco = (int*)malloc(ordem * sizeof(int));
 	novo->quant_data = 0;
 	return novo;
 }
@@ -51,10 +51,8 @@ int inicializa_indice(char* nomeTabela){
 /* Insere os valores da chave (ind) e do endereço da tupla no arquivo de dados
  * (end) em um nodo (n) */
 nodo* insereChaveEmNodoFolha(char* ind, int end, nodo *n){
-	n->data = (char**)malloc(ordem * sizeof(char**));
 	n->data[n->quant_data] = (char *)malloc((strlen(ind)+1) * sizeof(char));
 	n->data[n->quant_data] = ind;
-	n->endereco = (int*)malloc(ordem * sizeof(int));
 	n->endereco[n->quant_data] = end;
 	n->quant_data++;
 	return n;
@@ -62,7 +60,6 @@ nodo* insereChaveEmNodoFolha(char* ind, int end, nodo *n){
 
 /* Insere unicamente o valor da chave em um nodo interno (n) */
 nodo* insereChaveEmNodoInterno(char* ind, nodo* n) {
-	n->data = (char**)malloc(ordem * sizeof(char**));
 	n->data[n->quant_data] = (char *)malloc((strlen(ind)+1) * sizeof(char));
 	n->data[n->quant_data] = ind;
 	n->quant_data++;
@@ -92,6 +89,7 @@ nodo* busca_insere(nodo* raiz, char* ind, int end) {
 	//1. A árvore é destruída após a operação (SELECT, INSERT...)
 	//2. O retorno desta função é um ponteiro para o indice denso, e não para a árvore de maneira organizada.
 	aux = insereChaveEmNodoFolha(ind, end, aux);
+	if(aux->quant_data == 3)printf("%s\n",aux->data[1]);
 	while (aux->ant) aux = aux->ant; //retorna ao inicio do indice denso
 	return aux;
 }
@@ -141,7 +139,7 @@ nodo* constroi_bplus(char* nomeTabela){
 	}
 	fseek(new,0,SEEK_SET);
 	palavra = (char*)malloc(sizeof(char*));
-	while(!feof(new)){
+	while(1){
 		while(le != '$'){
 			fread(&le, sizeof(char),1,new);
 			if(le != '$') {
@@ -206,6 +204,10 @@ nodo* constroi_bplus(char* nomeTabela){
 			}
 		}
 		if (aux->prox) aux = aux->prox;
+		
+		fread(&le, sizeof(char), 1, new);// tenta ler o fim do arquivo
+		if(le == '&') break;
+		fseek(new,-1,SEEK_CUR);
 	}
 	raiz = aux3;
 	while(raiz->pai){
@@ -241,6 +243,8 @@ void insere_arquivo(nodo* inicio, char* nomeTabela){
 		}
 		aux = aux->prox;
 	}
+	char2 = '&';
+	fwrite(&char2,sizeof(char),1,new);
 	fclose(new);
 }
 
@@ -263,6 +267,7 @@ int main(){
 	inicializa_indice("tabela1");
 	insere_indice("um","tabela1",1);
 	insere_indice("dois","tabela1",2);
+	insere_indice("tres","tabela1",3);
 
 	return 0;
 }
