@@ -138,15 +138,18 @@ nodo* constroi_bplus(char* nomeTabela){
 		return NULL;
 	}
 	fseek(new,0,SEEK_SET);
-	palavra = (char*)malloc(sizeof(char));
+	
 	while(1){
+		palavra = (char*)malloc(sizeof(char));
 		while(le != '$'){
-			fread(&le, sizeof(char),1,new);
+			fread(&le, sizeof(char),1,new);	
 			if(le != '$') {
 				palavra = (char *) realloc(palavra, (++cont) * sizeof(char));
 				palavra[cont-1] = le;
 			}
 		}
+		palavra = (char *) realloc(palavra, (++cont) * sizeof(char));
+		palavra[cont-1] = '\0';
 		cont = 0;
 		fread(&le2, sizeof(int), 1, new); //lê o endereço
 		fread(&le, sizeof(char), 1, new); //lê o caractere especial '#'
@@ -204,10 +207,10 @@ nodo* constroi_bplus(char* nomeTabela){
 			}
 		}
 		if (aux->prox) aux = aux->prox;
-
 		fread(&le, sizeof(char), 1, new);// tenta ler o fim do arquivo
 		if(le == '&') break;
 		fseek(new,-1,SEEK_CUR);
+
 	}
 	raiz = aux3;
 	while(raiz->pai){
