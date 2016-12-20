@@ -180,6 +180,7 @@ nodo* constroi_bplus(char* nomeTabela){
 						aux->pai->filhos[aux->pai->quant_data] = aux->prox;
 						flag= 1;
 						aux = aux->pai;
+						break;
 					}
 					else { //estourou a capacidade do nodo interno pai
 						aux2 = aux->prox;
@@ -215,6 +216,8 @@ nodo* constroi_bplus(char* nomeTabela){
 
 // insere os dados do nodo folha no arquivo de indices Da tabela
 void insere_arquivo(nodo* inicio, char* nomeTabela){
+	char char1 = '$';
+	char char2 = '#';
 	int i;
 	nodo *aux = NULL;
 	aux = inicio;
@@ -230,10 +233,10 @@ void insere_arquivo(nodo* inicio, char* nomeTabela){
 	while(aux){
 		i = 0;
 		while(i < aux->quant_data){
-			fprintf(new,"%s",aux->data[i]);
-			fprintf(new,"%c",'$');
-			fprintf(new,"%d",aux->endereco[i]);
-			fprintf(new,"%c",'#');
+			fwrite(aux->data[i],sizeof(char),strlen(aux->data[i]),new);
+			fwrite(&char1,sizeof(char),1,new);
+			fwrite(&aux->endereco[i],sizeof(int),1,new);
+			fwrite(&char2,sizeof(char),1,new);
 			i++;
 		}
 		aux = aux->prox;
