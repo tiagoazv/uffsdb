@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define ordem 10
+#define ordem 2
 
 /**
 * estrutura do nodo da arvore b+
