@@ -138,11 +138,11 @@ nodo* constroi_bplus(char* nomeTabela){
 		return NULL;
 	}
 	fseek(new,0,SEEK_SET);
-	
+
 	while(1){
 		palavra = (char*)malloc(sizeof(char));
 		while(le != '$'){
-			fread(&le, sizeof(char),1,new);	
+			fread(&le, sizeof(char),1,new);
 			if(le != '$') {
 				palavra = (char *) realloc(palavra, (++cont) * sizeof(char));
 				palavra[cont-1] = le;
@@ -265,6 +265,22 @@ void insere_indice(char* ind, char* nomeTabela, int end){
 
 }
 
+void imprime(nodo* n) {
+	imprime_arvore(n, 1);
+}
+
+void imprime_arvore(nodo* n, int nivel) {
+	int i;
+	if (!n) return;
+	for (i = 0; i < nivel; i++) printf("*");
+	for (i = 0; i < n->quant_data; i++) {
+		if (i) printf(" | ");
+		printf("%s");
+	}
+	printf("\n");
+	for (i = 0; i <= n->quant_data; i++)
+		imprime_arvore(n->filhos[i], nivel++);
+}
 
 int main(){
 	inicializa_indice("tabela1");
