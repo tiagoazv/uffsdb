@@ -38,7 +38,7 @@ char* concatena_extensao(char* nomeTabela) {
 
 //quando o usuário cria uma tabela, está função deve ser chamada para criar o arquivo de indice.
 int inicializa_indice(char* nomeTabela){
-	char arroba;
+	char arroba = '@';
 	FILE * new_indice = NULL;
 	char* nomeArquivo = concatena_extensao(nomeTabela);
 	new_indice = fopen(nomeArquivo, "a");
