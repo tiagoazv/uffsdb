@@ -2,18 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define ordem 3
-/**
-* estrutura do nodo da arvore b+
-**/
-typedef struct nodo{
-	char **data;
-	int *endereco;
-	struct nodo *pai, *prox, *ant;
-	struct nodo **filhos;
-	int quant_data;
-} nodo;
-
 //cria novo nodo vazio
 nodo* criaNodo() {
 	nodo * novo = NULL;
@@ -26,6 +14,7 @@ nodo* criaNodo() {
 	return novo;
 }
 
+//recursão de impressão em níveis
 void imprime_arvore(nodo* n, int nivel) {
 	int i;
 	if (!n) return;
@@ -40,12 +29,11 @@ void imprime_arvore(nodo* n, int nivel) {
 			imprime_arvore(n->filhos[i], nivel+1);
 	}
 }
-
+//base da recursão imprime_arvore
 void imprime(nodo* n) {
 	imprime_arvore(n, 1);
 	printf("---\n");
 }
-
 
 //recebe o nome de uma tabela, concatena a extensão .dat e retorna essa junção.
 char* concatena_extensao(char* nomeTabela) {
