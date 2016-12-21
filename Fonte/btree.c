@@ -26,6 +26,27 @@ nodo* criaNodo() {
 	return novo;
 }
 
+void imprime_arvore(nodo* n, int nivel) {
+	int i;
+	if (!n) return;
+	for (i = 0; i < nivel; i++) printf("*");
+	for (i = 0; i < n->quant_data; i++) {
+		if (i) printf(" | ");
+		printf("%s", n->data[i]);
+	}
+	printf("\n");
+	if (n->filhos) {
+		for (i = 0; i <= n->quant_data; i++)
+			imprime_arvore(n->filhos[i], nivel+1);
+	}
+}
+
+void imprime(nodo* n) {
+	imprime_arvore(n, 1);
+	printf("---\n");
+}
+
+
 //recebe o nome de uma tabela, concatena a extensão .dat e retorna essa junção.
 char* concatena_extensao(char* nomeTabela) {
 	char *concatena;
@@ -123,7 +144,7 @@ nodo* constroi_bplus(char* nomeTabela){
 	nodo *aux3 = NULL;
 	nodo *aux4 = NULL;
 	nodo *aux5 = NULL;
-	
+
 	int flag = 0;
 
 	char* nomeArquivo = concatena_extensao(nomeTabela);
@@ -260,6 +281,7 @@ void insere_arquivo(nodo* inicio, char* nomeTabela){
 void insere_indice(char* ind, char* nomeTabela, int end){
 	nodo *aux;
 	aux = constroi_bplus(nomeTabela);// retorna raiz
+	imprime(aux);
 	aux = busca_insere(aux,ind,end); // retorna inicio da lista dos folhas
 	if(aux == NULL){
 		 aux = criaNodo();//arvore vazia
@@ -268,23 +290,6 @@ void insere_indice(char* ind, char* nomeTabela, int end){
 	insere_arquivo(aux,nomeTabela);
 	destroi_arvore(aux);
 
-}
-
-void imprime_arvore(nodo* n, int nivel) {
-	int i;
-	if (!n) return;
-	for (i = 0; i < nivel; i++) printf("*");
-	for (i = 0; i < n->quant_data; i++) {
-		if (i) printf(" | ");
-		printf("%s",n->data[i]);
-	}
-	printf("\n");
-	for (i = 0; i <= n->quant_data; i++)
-		imprime_arvore(n->filhos[i], nivel++);
-}
-
-void imprime(nodo* n) {
-	imprime_arvore(n, 1);
 }
 
 int main(){
