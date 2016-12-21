@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "btree.h"
 
 //cria novo nodo vazio
 nodo* criaNodo() {
@@ -280,7 +281,7 @@ void insere_indice(char* ind, char* nomeTabela, int end){
 
 }
 
-int main(){
+/*int main(){
 	inicializa_indice("tabela1");
 	insere_indice("1","tabela1",1);
 	insere_indice("2","tabela1",2);
@@ -296,4 +297,4 @@ int main(){
 	insere_indice("C","tabela1",12);
 
 	return 0;
-}
+}*/

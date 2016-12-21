@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "btree.h"
 ////
 #ifndef FMACROS // garante que macros.h não seja reincluída
    #include "macros.h"
@@ -380,6 +381,8 @@ int finalizaInsert(char *nome, column *c){
     char directory[LEN_DB_NAME_IO];
     strcpy(directory, connected.db_directory);
     strcat(directory, dicio.nArquivo);
+
+	printf("%s\n", dicio.nArquivo);
 
     if((dados = fopen(directory,"a+b")) == NULL){
       printf("ERROR: cannot open file.\n");
@@ -1017,6 +1020,28 @@ int verifyFieldName(char **fieldName, int N){
 
 //////
 void createTable(rc_insert *t) {
+  
+  char *connected_directory = (char *) malloc(sizeof(char) * (strlen(connected.db_directory)));
+  char *nome_index = (char *) malloc(sizeof(char) * (strlen(t->objName)));
+  strcpy(nome_index, t->objName);
+  strcpy(connected_directory, connected.db_directory);
+  
+  for(int i = 0; i < t->N; i++) {
+		if(t->attribute[i] == PK) {
+		  nome_index = (char *) realloc(nome_index, strlen(nome_index) + strlen(t->columnName[i]));
+		  strcat(nome_index, t->columnName[i]);
+		}
+	}
+	
+	nome_index = (char *) realloc(nome_index, strlen(connected.db_directory));
+	
+	strcat(connected_directory, nome_index);
+	strncpylower(connected_directory, connected_directory, strlen(connected_directory));
+	printf("%s\n", connected_directory);
+	
+	// Iniciliaza o indice B+
+	inicializa_indice(connected_directory);
+	
   if(strlen(t->objName) > TAMANHO_NOME_TABELA){
       printf("A table name must have no more than %d caracteres.\n",TAMANHO_NOME_TABELA);
       return;
@@ -1033,6 +1058,12 @@ void createTable(rc_insert *t) {
     free(tableName);
     return;
   }
+
+  // Cria o arquivo de indices B+ para a tabela t->objName
+  
+  
+  //inicializa_indice(t->objName);
+  
 
   table *tab = NULL;
   tab = iniciaTabela(t->objName);    //cria a tabela
