@@ -68,11 +68,11 @@ int cmpstr (const void *a, const void *b){
 /* Insere os valores da chave (ind) e do endereço da tupla no arquivo de dados
  * (end) em um nodo (n) */ 
 nodo* insereChaveEmNodoFolha(char* ind, int end, nodo *n){
-	int i;
 	n->data[n->quant_data] = (char *)malloc((strlen(ind)+1) * sizeof(char));
 	n->data[n->quant_data] = ind;
 	n->endereco[n->quant_data] = end; 
 	n->quant_data++;
+	// Ordenação de índices primários
 	qsort(n->data, n->quant_data, sizeof(char *), cmpstr);
 	return n;
 }
