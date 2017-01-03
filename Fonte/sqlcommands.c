@@ -314,6 +314,40 @@ int finalizaInsert(char *nome, column *c){
     tab->esquema = abreTabela(nome, &objeto, &tab->esquema);
     tab2 = procuraAtributoFK(objeto);
 
+    //-----------------------
+    tp_table *auxTab2 = tab2;
+    column *col = c;
+    char *chaveIndice = (char*)malloc(sizeof(char));
+    strcpy(chaveIndice, "\0");
+    char *arquivoIndice = (char *)malloc(sizeof(char) * strlen(connected.db_directory));
+    strcpy(arquivoIndice,connected.db_directory);
+    arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(nome)));
+    strcat(arquivoIndice, nome);
+
+    while(auxTab2 && col) {
+      if(auxTab2->chave == PK) {
+        arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(auxTab2->nome)));
+        strcat(arquivoIndice, auxTab2->nome);
+        chaveIndice = (char*)realloc(chaveIndice, sizeof(char) * (strlen(chaveIndice) + strlen(col->valorCampo)));
+        strcat(chaveIndice,col->valorCampo);
+      }
+      col = col->next;
+      auxTab2 = auxTab2->next;
+    }
+    arquivoIndice = (char*)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(".dat")));
+    strcat(arquivoIndice, ".dat");
+
+    nodo *raiz = constroi_bplus(arquivoIndice);
+
+    if(raiz != NULL) {
+      int encontrou = buscaChaveBtree(raiz, chaveIndice);
+      if (encontrou) {
+        printf("ERROR: duplicate key value violates unique constraint \"%s_pkey\"\nDETAIL:  Key (%s)=(%s) already exists.\n"
+        return ERRO_CHAVE_PRIMARIA;
+      }
+    }
+    //------------------------
+
     for(j = 0, temp = c; j < objeto.qtdCampos && temp != NULL; j++, temp = temp->next){
         switch(tab2[j].chave){
             case NPK:
@@ -1020,28 +1054,22 @@ int verifyFieldName(char **fieldName, int N){
 
 //////
 void createTable(rc_insert *t) {
-  
   char *connected_directory = (char *) malloc(sizeof(char) * (strlen(connected.db_directory)));
   char *nome_index = (char *) malloc(sizeof(char) * (strlen(t->objName)));
   strcpy(nome_index, t->objName);
   strcpy(connected_directory, connected.db_directory);
-  
   for(int i = 0; i < t->N; i++) {
 		if(t->attribute[i] == PK) {
 		  nome_index = (char *) realloc(nome_index, strlen(nome_index) + strlen(t->columnName[i]));
 		  strcat(nome_index, t->columnName[i]);
 		}
 	}
-	
 	nome_index = (char *) realloc(nome_index, strlen(connected.db_directory));
-	
 	strcat(connected_directory, nome_index);
 	strncpylower(connected_directory, connected_directory, strlen(connected_directory));
 	printf("%s\n", connected_directory);
-	
 	// Iniciliaza o indice B+
 	inicializa_indice(connected_directory);
-	
   if(strlen(t->objName) > TAMANHO_NOME_TABELA){
       printf("A table name must have no more than %d caracteres.\n",TAMANHO_NOME_TABELA);
       return;
@@ -1060,10 +1088,7 @@ void createTable(rc_insert *t) {
   }
 
   // Cria o arquivo de indices B+ para a tabela t->objName
-  
-  
   //inicializa_indice(t->objName);
-  
 
   table *tab = NULL;
   tab = iniciaTabela(t->objName);    //cria a tabela

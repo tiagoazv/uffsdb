@@ -59,19 +59,19 @@ int inicializa_indice(char* nomeTabela){
 }
 
 /* Função comparação entre strings para uso na função Qsort */
-int cmpstr (const void *a, const void *b){ 
+int cmpstr (const void *a, const void *b){
 	const char **ia = (const char **)a;
 	const char **ib = (const char **)b;
-	return strcmp(*ia, *ib); 
+	return strcmp(*ia, *ib);
 }
 
 /* Insere os valores da chave (ind) e do endereço da tupla no arquivo de dados
- * (end) em um nodo (n) */ 
+ * (end) em um nodo (n) */
 nodo* insereChaveEmNodoFolha(char* ind, int end, nodo *n){
 	int i;
 	n->data[n->quant_data] = (char *)malloc((strlen(ind)+1) * sizeof(char));
 	n->data[n->quant_data] = ind;
-	n->endereco[n->quant_data] = end; 
+	n->endereco[n->quant_data] = end;
 	n->quant_data++;
 	qsort(n->data, n->quant_data, sizeof(char *), cmpstr);
 	return n;
@@ -85,6 +85,31 @@ nodo* insereChaveEmNodoInterno(char* ind, nodo* n) {
 	n->filhos = (nodo**)realloc(n->filhos, sizeof(nodo**) * (n->quant_data+1)); //aumenta o numero de ponteiros para filhos
 	return n;
 }
+
+/* Recebe a raiz para a árvore e o valor de uma chave. Tenta encontrar a chave
+ * na árvore. Se encontrar retorna 1, caso contrário retorna 0. */
+int buscaChaveBtree(nodo* raiz, char* ind) {
+	int i;
+	nodo* aux = raiz;
+	if (!raiz) return NULL; //arvore vazia
+	while (aux->filhos != NULL) { //desce na arvore até chegar na folha
+		for (i = 0; i < aux->quant_data; i++) { //anda dentro do nodo
+			if (strcmp(ind, aux->data[i]) < 0) { //se é menor que a chave na posição i
+				aux = aux->filhos[i]; //desce para a esquerda
+				break;
+			}
+		}
+		//se não é menor que nenhum valor do nodo, desce pelo ponteiro mais à direita
+		if (i == aux->quant_data) {
+			aux = aux->filhos[aux->quant_data];
+		}
+	}
+	for (i = 0; i < aux->quant_data; i++) {
+		if (strcmp(aux->data[i], ind) == 0) return 1;
+	}
+	return 0;
+}
+
 
 /* Busca a posição de inserção de uma chave (ind) e um endereço (end) na árvore.
  * Retorna um ponteiro para o índice denso (lista de folhas). */
@@ -276,18 +301,15 @@ void insere_arquivo(nodo* inicio, char* nomeTabela){
 }
 
 //insere o indice e o endereço no arquivo de indices
-void insere_indice(char* ind, char* nomeTabela, int end){
-	nodo *aux;
-	aux = constroi_bplus(nomeTabela);// retorna raiz
-	imprime(aux);
-	aux = busca_insere(aux,ind,end); // retorna inicio da lista dos folhas
+void insere_indice(nodo* raiz, char* ind, char* nomeTabela, int end){
+	nodo * aux;
+	aux = busca_insere(raiz,ind,end); // retorna inicio da lista dos folhas
 	if(aux == NULL){
 		 aux = criaNodo();//arvore vazia
 		 aux = insereChaveEmNodoFolha(ind,end,aux);
 	}
 	insere_arquivo(aux,nomeTabela);
 	destroi_arvore(aux);
-
 }
 
 /*int main(){
