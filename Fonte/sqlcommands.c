@@ -1054,22 +1054,12 @@ int verifyFieldName(char **fieldName, int N){
 
 //////
 void createTable(rc_insert *t) {
-  char *connected_directory = (char *) malloc(sizeof(char) * (strlen(connected.db_directory)));
+  
+  char *index_directory = (char *) malloc(sizeof(char) * (strlen(connected.db_directory)));
   char *nome_index = (char *) malloc(sizeof(char) * (strlen(t->objName)));
-  strcpy(nome_index, t->objName);
-  strcpy(connected_directory, connected.db_directory);
-  for(int i = 0; i < t->N; i++) {
-		if(t->attribute[i] == PK) {
-		  nome_index = (char *) realloc(nome_index, strlen(nome_index) + strlen(t->columnName[i]));
-		  strcat(nome_index, t->columnName[i]);
-		}
-	}
-	nome_index = (char *) realloc(nome_index, strlen(connected.db_directory));
-	strcat(connected_directory, nome_index);
-	strncpylower(connected_directory, connected_directory, strlen(connected_directory));
-	printf("%s\n", connected_directory);
-	// Iniciliaza o indice B+
-	inicializa_indice(connected_directory);
+  strcpy(nome_index, t->objName); // Copia o nome da tabela
+  strcpy(index_directory, connected.db_directory); // Copia o diretório atual
+	
   if(strlen(t->objName) > TAMANHO_NOME_TABELA){
       printf("A table name must have no more than %d caracteres.\n",TAMANHO_NOME_TABELA);
       return;
@@ -1086,9 +1076,6 @@ void createTable(rc_insert *t) {
     free(tableName);
     return;
   }
-
-  // Cria o arquivo de indices B+ para a tabela t->objName
-  //inicializa_indice(t->objName);
 
   table *tab = NULL;
   tab = iniciaTabela(t->objName);    //cria a tabela
@@ -1126,7 +1113,27 @@ void createTable(rc_insert *t) {
     }
   }
 
-  printf("%s\n",(finalizaTabela(tab) == SUCCESS)? "CREATE TABLE" : "ERROR: table already exist\n");
+  //Se não existe tabela com esse nome
+  if(finalizaTabela(tab) == SUCCESS) {
+	for(int i = 0; i < t->N; i++) {
+		if(t->attribute[i] == PK) {
+		  nome_index = (char *) realloc(nome_index, strlen(nome_index) + strlen(t->columnName[i]));
+		  strcat(nome_index, t->columnName[i]);
+		}
+	}
+	
+	nome_index = (char *) realloc(nome_index, strlen(connected.db_directory));
+	strcat(index_directory, nome_index);
+	strncpylower(index_directory, index_directory, strlen(index_directory));
+	
+	// Iniciliaza o indice B+ (nome_da_tabela + chave_primaria).dat
+	inicializa_indice(index_directory);
+	printf("CREATE TABLE\n");
+	
+  } else { //Tabela já existe, então não é preciso criar o índice b+.
+	printf("ERROR: table already exist\n");
+  }
+  
   free(tableName);
   if(tab != NULL) freeTable(tab);
 }
