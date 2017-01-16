@@ -52,4 +52,6 @@ nodo* constroi_bplus(char* nomeTabela);
 void insere_arquivo(nodo* inicio, char* nomeTabela);
 
 /* Insere a chave (ind) e o endereço (end) no arquivo de indices. */
-void insere_indice(char* ind, char* nomeTabela, int end);
+void insere_indice(nodo* raiz, char* ind, char* nomeTabela, int end);
+
+int buscaChaveBtree(nodo* raiz, char* ind);

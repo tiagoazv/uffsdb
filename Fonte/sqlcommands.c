@@ -315,37 +315,15 @@ int finalizaInsert(char *nome, column *c){
     tab2 = procuraAtributoFK(objeto);
 
     //-----------------------
-    tp_table *auxTab2 = tab2;
-    column *col = c;
     char *chaveIndice = (char*)malloc(sizeof(char));
     strcpy(chaveIndice, "\0");
-    char *arquivoIndice = (char *)malloc(sizeof(char) * strlen(connected.db_directory));
+    char *arquivoIndice = (char *)malloc(sizeof(char) * strlen(connected.db_directory));// caminho diretorio de arquivo de indice
     strcpy(arquivoIndice,connected.db_directory);
     arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(nome)));
     strcat(arquivoIndice, nome);
+    char nome_atributo[TAMANHO_NOME_CAMPO];
+    int flag = 0;
 
-    while(auxTab2 && col) {
-      if(auxTab2->chave == PK) {
-        arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(auxTab2->nome)));
-        strcat(arquivoIndice, auxTab2->nome);
-        chaveIndice = (char*)realloc(chaveIndice, sizeof(char) * (strlen(chaveIndice) + strlen(col->valorCampo)));
-        strcat(chaveIndice,col->valorCampo);
-      }
-      col = col->next;
-      auxTab2 = auxTab2->next;
-    }
-    arquivoIndice = (char*)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(".dat")));
-    strcat(arquivoIndice, ".dat");
-
-    nodo *raiz = constroi_bplus(arquivoIndice);
-
-    if(raiz != NULL) {
-      int encontrou = buscaChaveBtree(raiz, chaveIndice);
-      if (encontrou) {
-        printf("ERROR: duplicate key value violates unique constraint \"%s_pkey\"\nDETAIL:  Key (%s)=(%s) already exists.\n"
-        return ERRO_CHAVE_PRIMARIA;
-      }
-    }
     //------------------------
 
     for(j = 0, temp = c; j < objeto.qtdCampos && temp != NULL; j++, temp = temp->next){
@@ -355,21 +333,38 @@ int finalizaInsert(char *nome, column *c){
             break;
 
             case PK:
-              erro = verificaChavePK(nome, temp , temp->nomeCampo, temp->valorCampo);
-              if (erro == ERRO_CHAVE_PRIMARIA){
-                  printf("ERROR: duplicate key value violates unique constraint \"%s_pkey\"\nDETAIL:  Key (%s)=(%s) already exists.\n", nome, temp->nomeCampo, temp->valorCampo);
-
-				          free(auxT); // Libera a memoria da estrutura.
-				          //free(temp); // Libera a memoria da estrutura.
-				          free(tab); // Libera a memoria da estrutura.
-				          free(tab2); // Libera a memoria da estrutura.
-                  return ERRO_CHAVE_PRIMARIA;
-              }
+				if(flag == 1) break;
+				arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(tab2[j].nome)));
+				strcat(arquivoIndice, tab2[j].nome);
+				chaveIndice = (char*)realloc(chaveIndice, sizeof(char) * (strlen(chaveIndice) + strlen(temp->valorCampo)));
+				strcat(chaveIndice,temp->valorCampo);
+				strcpy(nome_atributo,temp->nomeCampo);
+				
+				 // verificacao da chave primaria
+				nodo *raiz = constroi_bplus(arquivoIndice);
+				if(raiz != NULL) {
+					int encontrou = buscaChaveBtree(raiz, chaveIndice);
+					if (encontrou) {
+						printf("ERROR: duplicate key value violates unique constraint \"%s_pkey\"\nDETAIL:  Key (%s)=(%s) already exists.\n",nome,nome_atributo,chaveIndice);
+						free(auxT); // Libera a memoria da estrutura.
+						//free(temp); // Libera a memoria da estrutura.
+						free(tab); // Libera a memoria da estrutura.
+						free(tab2); // Libera a memoria da estrutura.
+						return ERRO_CHAVE_PRIMARIA;
+					}
+				}
+				flag = 1;
             break;
 
             case FK:
-              if (tab2[j].chave == 2 && strlen(tab2[j].attApt) != 0 && strlen(tab2[j].tabelaApt) != 0){
-                  erro = verificaChaveFK(nome, temp, tab2[j].nome, temp->valorCampo,
+				arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(tab2[j].tabelaApt)));
+				strcat(arquivoIndice, tab2[j].tabelaApt);
+				chaveIndice = (char*)realloc(chaveIndice, sizeof(char) * (strlen(chaveIndice) + strlen(temp->valorCampo)));
+				strcat(chaveIndice,temp->valorCampo);
+				strcpy(nome_atributo,tab2[j].attApt);
+				
+				if (strlen(tab2[j].attApt) != 0 && strlen(tab2[j].tabelaApt) != 0){
+					erro = verificaChaveFK(nome, temp, tab2[j].nome, temp->valorCampo,
                                           tab2[j].tabelaApt, tab2[j].attApt);
                   if (erro != SUCCESS){
                       printf("ERROR: invalid reference to \"%s.%s\". The value \"%s\" does not exist.\n", tab2[j].tabelaApt,tab2[j].attApt,temp->valorCampo);
@@ -383,33 +378,6 @@ int finalizaInsert(char *nome, column *c){
               }
             break;
         }
-    }
-
-    if (erro == ERRO_CHAVE_ESTRANGEIRA){
-      printf("ERROR: unknown foreign key error.\n");
-      free(auxT); // Libera a memoria da estrutura.
-      free(temp); // Libera a memoria da estrutura.
-      free(tab); // Libera a memoria da estrutura.
-      free(tab2); // Libera a memoria da estrutura.
-      return ERRO_CHAVE_ESTRANGEIRA;
-    }
-
-    if (erro == ERRO_CHAVE_PRIMARIA){
-      printf("ERROR: unknown primary key error.\n");
-      free(auxT); // Libera a memoria da estrutura.
-      free(temp); // Libera a memoria da estrutura.
-      free(tab); // Libera a memoria da estrutura.
-      free(tab2); // Libera a memoria da estrutura.
-      return ERRO_CHAVE_PRIMARIA;
-    }
-
-    if (erro == ERRO_DE_PARAMETRO) {
-      printf("ERROR: invalid parameter.\n");
-      free(auxT); // Libera a memoria da estrutura.
-      free(temp); // Libera a memoria da estrutura.
-      free(tab); // Libera a memoria da estrutura.
-      free(tab2); // Libera a memoria da estrutura.
-      return ERRO_DE_PARAMETRO;
     }
 
     char directory[LEN_DB_NAME_IO];

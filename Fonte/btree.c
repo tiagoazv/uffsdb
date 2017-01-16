@@ -91,7 +91,7 @@ nodo* insereChaveEmNodoInterno(char* ind, nodo* n) {
 int buscaChaveBtree(nodo* raiz, char* ind) {
 	int i;
 	nodo* aux = raiz;
-	if (!raiz) return NULL; //arvore vazia
+	if (!raiz) return 0; //arvore vazia
 	while (aux->filhos != NULL) { //desce na arvore até chegar na folha
 		for (i = 0; i < aux->quant_data; i++) { //anda dentro do nodo
 			if (strcmp(ind, aux->data[i]) < 0) { //se é menor que a chave na posição i
