@@ -278,6 +278,7 @@ void insere_arquivo(nodo* inicio, char* nomeTabela){
 	FILE * new = NULL;
 	char* nomeArquivo = concatena_extensao(nomeTabela);
 	new = fopen(nomeArquivo,"w");
+	printf("%s\n",nomeArquivo);
 	free(nomeArquivo);
 	if(!new){
 		printf("Erro de abertura de arquivo\n");
@@ -289,7 +290,7 @@ void insere_arquivo(nodo* inicio, char* nomeTabela){
 		while(i < aux->quant_data){
 			fwrite(aux->data[i],sizeof(char),strlen(aux->data[i]),new);
 			fwrite(&char1,sizeof(char),1,new);
-			fwrite(&aux->endereco[i],sizeof(int),1,new);
+			fwrite(&aux->endereco[i],sizeof(long int),1,new);
 			fwrite(&char2,sizeof(char),1,new);
 			i++;
 		}

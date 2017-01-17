@@ -321,6 +321,7 @@ int finalizaInsert(char *nome, column *c){
 
     for(j = 0, temp = c; j < objeto.qtdCampos && temp != NULL; j++, temp = temp->next){
         switch(tab2[j].chave){
+			printf("%d\n",tab2[j].chave);
             case NPK:
               erro = SUCCESS;
             break;
@@ -412,7 +413,14 @@ int finalizaInsert(char *nome, column *c){
         if (t >= dicio.qtdCampos) t = 0;
         
         if (auxT[t].chave == PK) {
-            insere_indice(raiz, auxC->valorCampo, nome, offset);
+			char * nomeAtrib;
+			nomeAtrib = (char*)malloc((strlen(nome)+strlen(auxC->nomeCampo) + strlen(connected.db_directory))* sizeof(char));
+			strcpy(nomeAtrib, connected.db_directory);
+			strcat(nomeAtrib, nome);
+			strcat(nomeAtrib,auxC->nomeCampo);
+            insere_indice(raiz, auxC->valorCampo, nomeAtrib, offset);
+            free(nomeAtrib);
+      
         }
 
         if (auxT[t].tipo == 'S'){ // Grava um dado do tipo string.
