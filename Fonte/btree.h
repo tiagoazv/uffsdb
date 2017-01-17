@@ -4,7 +4,7 @@
 **/
 typedef struct nodo{
 	char **data;
-	int *endereco;
+	long int *endereco;
 	struct nodo *pai, *prox, *ant;
 	struct nodo **filhos;
 	int quant_data;
@@ -30,7 +30,7 @@ int inicializa_indice(char* nomeTabela);
 
 /* Insere os valores da chave (ind) e do endereço da tupla no arquivo de dados
  * (end) em um nodo (n). Retorna o mesmo nodo com a nova chave inclusa. */
-nodo* insereChaveEmNodoFolha(char* ind, int end, nodo *n);
+nodo* insereChaveEmNodoFolha(char* ind, long int end, nodo *n);
 
 /* Insere unicamente o valor da chave em um nodo interno (n). Retorna o mesmo
  * nodo com a nova chave inclusa. */
@@ -52,6 +52,6 @@ nodo* constroi_bplus(char* nomeTabela);
 void insere_arquivo(nodo* inicio, char* nomeTabela);
 
 /* Insere a chave (ind) e o endereço (end) no arquivo de indices. */
-void insere_indice(nodo* raiz, char* ind, char* nomeTabela, int end);
+void insere_indice(nodo* raiz, char* ind, char* nomeTabela, long int end);
 
 int buscaChaveBtree(nodo* raiz, char* ind);

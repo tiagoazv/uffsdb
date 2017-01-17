@@ -300,8 +300,9 @@ int verificaChavePK(char *nomeTabela, column *c, char *nomeCampo, char *valorCam
 /////
 int finalizaInsert(char *nome, column *c){
     column *auxC, *temp;
-    int i = 0, x = 0, t, erro, j = 0;
+    int i = 0, x = 0, t, erro, encontrou, j = 0, flag=0;
     FILE *dados;
+    nodo *raiz, *raizfk;
 
     struct fs_objects objeto,dicio; // Le dicionario
     tp_table *auxT ; // Le esquema
@@ -315,15 +316,7 @@ int finalizaInsert(char *nome, column *c){
     tab2 = procuraAtributoFK(objeto);
 
     //-----------------------
-    char *chaveIndice = (char*)malloc(sizeof(char));
-    strcpy(chaveIndice, "\0");
-    char *arquivoIndice = (char *)malloc(sizeof(char) * strlen(connected.db_directory));// caminho diretorio de arquivo de indice
-    strcpy(arquivoIndice,connected.db_directory);
-    arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(nome)));
-    strcat(arquivoIndice, nome);
-    char nome_atributo[TAMANHO_NOME_CAMPO];
-    int flag = 0;
-
+    char *arquivoIndice = NULL;
     //------------------------
 
     for(j = 0, temp = c; j < objeto.qtdCampos && temp != NULL; j++, temp = temp->next){
@@ -333,48 +326,67 @@ int finalizaInsert(char *nome, column *c){
             break;
 
             case PK:
-				if(flag == 1) break;
-				arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(tab2[j].nome)));
-				strcat(arquivoIndice, tab2[j].nome);
-				chaveIndice = (char*)realloc(chaveIndice, sizeof(char) * (strlen(chaveIndice) + strlen(temp->valorCampo)));
-				strcat(chaveIndice,temp->valorCampo);
-				strcpy(nome_atributo,temp->nomeCampo);
-				
-				 // verificacao da chave primaria
-				nodo *raiz = constroi_bplus(arquivoIndice);
-				if(raiz != NULL) {
-					int encontrou = buscaChaveBtree(raiz, chaveIndice);
-					if (encontrou) {
-						printf("ERROR: duplicate key value violates unique constraint \"%s_pkey\"\nDETAIL:  Key (%s)=(%s) already exists.\n",nome,nome_atributo,chaveIndice);
-						free(auxT); // Libera a memoria da estrutura.
-						//free(temp); // Libera a memoria da estrutura.
-						free(tab); // Libera a memoria da estrutura.
-						free(tab2); // Libera a memoria da estrutura.
-						return ERRO_CHAVE_PRIMARIA;
-					}
-				}
-				flag = 1;
+        				if(flag == 1) break;
+                //monta o nome do arquivo de indice
+                arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * strlen(connected.db_directory));// caminho diretorio de arquivo de indice
+                strcpy(arquivoIndice, connected.db_directory); //diretorio
+                arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(nome)));
+                strcat(arquivoIndice, nome); //nome da tabela
+        				arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(tab2[j].nome)));
+        				strcat(arquivoIndice, tab2[j].nome); //nome do atributo
+
+        				 // verificacao da chave primaria
+        				raiz = constroi_bplus(arquivoIndice);
+        				if(raiz != NULL) {
+        					encontrou = buscaChaveBtree(raiz, temp->valorCampo);
+        					if (encontrou) {
+        						printf("ERROR: duplicate key value violates unique constraint \"%s_pkey\"\nDETAIL:  Key (%s)=(%s) already exists.\n",nome,temp->nomeCampo,temp->valorCampo);
+        						free(auxT); // Libera a memoria da estrutura.
+        						//free(temp); // Libera a memoria da estrutura.
+        						free(tab); // Libera a memoria da estrutura.
+        						free(tab2); // Libera a memoria da estrutura.
+        						return ERRO_CHAVE_PRIMARIA;
+        					}
+        				}
+        				flag = 1;
             break;
 
             case FK:
-				arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(tab2[j].tabelaApt)));
-				strcat(arquivoIndice, tab2[j].tabelaApt);
-				chaveIndice = (char*)realloc(chaveIndice, sizeof(char) * (strlen(chaveIndice) + strlen(temp->valorCampo)));
-				strcat(chaveIndice,temp->valorCampo);
-				strcpy(nome_atributo,tab2[j].attApt);
-				
-				if (strlen(tab2[j].attApt) != 0 && strlen(tab2[j].tabelaApt) != 0){
-					erro = verificaChaveFK(nome, temp, tab2[j].nome, temp->valorCampo,
-                                          tab2[j].tabelaApt, tab2[j].attApt);
-                  if (erro != SUCCESS){
-                      printf("ERROR: invalid reference to \"%s.%s\". The value \"%s\" does not exist.\n", tab2[j].tabelaApt,tab2[j].attApt,temp->valorCampo);
+              //monta o nome do arquivo de indice da chave estrangeira
+              arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * strlen(connected.db_directory));// caminho diretorio de arquivo de indice
+              strcpy(arquivoIndice, connected.db_directory); //diretorio
+      				arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(tab2[j].tabelaApt)));
+      				strcat(arquivoIndice, tab2[j].tabelaApt);
+              arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(tab2[j].attApt)));
+      				strcat(arquivoIndice, tab2[j].attApt);
 
-          						free(auxT); // Libera a memoria da estrutura.
-          						free(temp); // Libera a memoria da estrutura.
-                      free(tab); // Libera a memoria da estrutura.
-					            free(tab2); // Libera a memoria da estrutura.
-                      return ERRO_CHAVE_ESTRANGEIRA;
+              raizfk = constroi_bplus(arquivoIndice); //verifica se o atributo referenciado pela FK possui indice B+
+              if(raizfk == NULL) { //se não encontra faz a verificação sem indice b+
+        				if (strlen(tab2[j].attApt) != 0 && strlen(tab2[j].tabelaApt) != 0){
+        					  erro = verificaChaveFK(nome, temp, tab2[j].nome, temp->valorCampo,
+                                            tab2[j].tabelaApt, tab2[j].attApt);
+                    if (erro != SUCCESS){
+                        printf("ERROR: invalid reference to \"%s.%s\". The value \"%s\" does not exist.\n", tab2[j].tabelaApt,tab2[j].attApt,temp->valorCampo);
+
+            						free(auxT); // Libera a memoria da estrutura.
+            						free(temp); // Libera a memoria da estrutura.
+                        free(tab); // Libera a memoria da estrutura.
+  					            free(tab2); // Libera a memoria da estrutura.
+                        return ERRO_CHAVE_ESTRANGEIRA;
+                    }
+                }
+              } else { //atributo referenciado possui indice B+
+                  encontrou = buscaChaveBtree(raizfk, temp->valorCampo);
+                  if (!encontrou) {
+                    printf("ERROR: invalid reference to \"%s.%s\". The value \"%s\" does not exist.\n", tab2[j].tabelaApt,tab2[j].attApt,temp->valorCampo);
+
+                    free(auxT); // Libera a memoria da estrutura.
+                    free(temp); // Libera a memoria da estrutura.
+                    free(tab); // Libera a memoria da estrutura.
+                    free(tab2); // Libera a memoria da estrutura.
+                    return ERRO_CHAVE_ESTRANGEIRA;
                   }
+                  erro = SUCCESS;
               }
             break;
         }
@@ -384,7 +396,7 @@ int finalizaInsert(char *nome, column *c){
     strcpy(directory, connected.db_directory);
     strcat(directory, dicio.nArquivo);
 
-	printf("%s\n", dicio.nArquivo);
+	  printf("%s\n", dicio.nArquivo);
 
     if((dados = fopen(directory,"a+b")) == NULL){
       printf("ERROR: cannot open file.\n");
@@ -395,8 +407,13 @@ int finalizaInsert(char *nome, column *c){
       return ERRO_ABRIR_ARQUIVO;
 	   }
 
+    long int offset = ftell(dados);
     for(auxC = c, t = 0; auxC != NULL; auxC = auxC->next, t++){
         if (t >= dicio.qtdCampos) t = 0;
+        
+        if (auxT[t].chave == PK) {
+            insere_indice(raiz, auxC->valorCampo, nome, offset);
+        }
 
         if (auxT[t].tipo == 'S'){ // Grava um dado do tipo string.
           if (sizeof(auxC->valorCampo) > auxT[t].tam && sizeof(auxC->valorCampo) != 8){
@@ -423,6 +440,8 @@ int finalizaInsert(char *nome, column *c){
           strncpy(valorCampo, auxC->valorCampo, auxT[t].tam);
           strcat(valorCampo, "\0");
           fwrite(&valorCampo,sizeof(valorCampo),1,dados);
+          //------------- inserção B+ ------------
+
         }
         else if (auxT[t].tipo == 'I'){ // Grava um dado do tipo inteiro.
           i = 0;
@@ -1022,12 +1041,12 @@ int verifyFieldName(char **fieldName, int N){
 
 //////
 void createTable(rc_insert *t) {
-  
+
   char *index_directory = (char *) malloc(sizeof(char) * (strlen(connected.db_directory)));
   char *nome_index = (char *) malloc(sizeof(char) * (strlen(t->objName)));
   strcpy(nome_index, t->objName); // Copia o nome da tabela
   strcpy(index_directory, connected.db_directory); // Copia o diretório atual
-	
+
   if(strlen(t->objName) > TAMANHO_NOME_TABELA){
       printf("A table name must have no more than %d caracteres.\n",TAMANHO_NOME_TABELA);
       return;
@@ -1087,21 +1106,22 @@ void createTable(rc_insert *t) {
 		if(t->attribute[i] == PK) {
 		  nome_index = (char *) realloc(nome_index, strlen(nome_index) + strlen(t->columnName[i]));
 		  strcat(nome_index, t->columnName[i]);
+      break;
 		}
 	}
-	
+
 	nome_index = (char *) realloc(nome_index, strlen(connected.db_directory));
 	strcat(index_directory, nome_index);
 	strncpylower(index_directory, index_directory, strlen(index_directory));
-	
+
 	// Iniciliaza o indice B+ (nome_da_tabela + chave_primaria).dat
 	inicializa_indice(index_directory);
 	printf("CREATE TABLE\n");
-	
+
   } else { //Tabela já existe, então não é preciso criar o índice b+.
 	printf("ERROR: table already exist\n");
   }
-  
+
   free(tableName);
   if(tab != NULL) freeTable(tab);
 }

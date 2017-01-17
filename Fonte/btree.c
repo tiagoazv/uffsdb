@@ -10,7 +10,7 @@ nodo* criaNodo() {
 	novo->filhos = NULL;
 	novo->pai = novo->prox = novo->ant = NULL;
 	novo->data = (char**)malloc(ordem * sizeof(char*));
-	novo->endereco = (int*)malloc(ordem * sizeof(int));
+	novo->endereco = (long int*)malloc(ordem * sizeof(int));
 	novo->quant_data = 0;
 	return novo;
 }
@@ -67,7 +67,7 @@ int cmpstr (const void *a, const void *b){
 
 /* Insere os valores da chave (ind) e do endereço da tupla no arquivo de dados
  * (end) em um nodo (n) */
-nodo* insereChaveEmNodoFolha(char* ind, int end, nodo *n){
+nodo* insereChaveEmNodoFolha(char* ind, long int end, nodo *n){
 	n->data[n->quant_data] = (char *)malloc((strlen(ind)+1) * sizeof(char));
 	n->data[n->quant_data] = ind;
 	n->endereco[n->quant_data] = end;
@@ -301,7 +301,7 @@ void insere_arquivo(nodo* inicio, char* nomeTabela){
 }
 
 //insere o indice e o endereço no arquivo de indices
-void insere_indice(nodo* raiz, char* ind, char* nomeTabela, int end){
+void insere_indice(nodo* raiz, char* ind, char* nomeTabela, long int end){
 	nodo * aux;
 	aux = busca_insere(raiz,ind,end); // retorna inicio da lista dos folhas
 	if(aux == NULL){
