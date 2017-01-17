@@ -69,7 +69,7 @@ int cmpstr (const void *a, const void *b){
  * (end) em um nodo (n) */
 nodo* insereChaveEmNodoFolha(char* ind, long int end, nodo *n){
 	n->data[n->quant_data] = (char *)malloc((strlen(ind)+1) * sizeof(char));
-	n->data[n->quant_data] = ind;
+	strcpy(n->data[n->quant_data], ind);
 	n->endereco[n->quant_data] = end;
 	n->quant_data++;
 	// Ordenação de índices primários
@@ -186,6 +186,7 @@ nodo* constroi_bplus(char* nomeTabela){
 	fseek(new,0,SEEK_SET);
 
 	while(1){
+
 		palavra = (char*)malloc(sizeof(char));
 		while(le != '$'){
 			fread(&le, sizeof(char),1,new);
@@ -197,9 +198,8 @@ nodo* constroi_bplus(char* nomeTabela){
 		palavra = (char *) realloc(palavra, (++cont) * sizeof(char));
 		palavra[cont-1] = '\0';
 		cont = 0;
-		fread(&le2, sizeof(int), 1, new); //lê o endereço
+		fread(&le2, sizeof(long int), 1, new); //lê o endereço
 		fread(&le, sizeof(char), 1, new); //lê o caractere especial '#'
-
 		if(aux == NULL){ //árvore está vazia
 			aux = criaNodo();
 			aux = insereChaveEmNodoFolha(palavra,le2,aux);
@@ -254,11 +254,13 @@ nodo* constroi_bplus(char* nomeTabela){
 				flag = 0;
 			}
 		}
+		free(palavra);
 		if(aux4)aux = aux4;
 		if (aux->prox) aux = aux->prox;
 		fread(&le, sizeof(char), 1, new);// tenta ler o fim do arquivo
 		if(le == '&') break;
 		fseek(new,-1,SEEK_CUR);
+		
 
 	}
 	raiz = aux3;
@@ -278,7 +280,6 @@ void insere_arquivo(nodo* inicio, char* nomeTabela){
 	FILE * new = NULL;
 	char* nomeArquivo = concatena_extensao(nomeTabela);
 	new = fopen(nomeArquivo,"w");
-	printf("%s\n",nomeArquivo);
 	free(nomeArquivo);
 	if(!new){
 		printf("Erro de abertura de arquivo\n");

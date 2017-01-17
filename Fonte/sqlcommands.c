@@ -321,14 +321,13 @@ int finalizaInsert(char *nome, column *c){
     //------------------------
 
     for(j = 0, temp = c; j < objeto.qtdCampos && temp != NULL; j++, temp = temp->next){
-        printf("%d\n",tab2[j].chave);
         switch(tab2[j].chave){
             case NPK:
               erro = SUCCESS;
             break;
 
             case PK:
-        				if(flag == 1) break;
+        		if(flag == 1) break;
                 //monta o nome do arquivo de indice
                 arquivoIndice = (char *)malloc(sizeof(char) * strlen(connected.db_directory));// caminho diretorio de arquivo de indice
                 strcpy(arquivoIndice, connected.db_directory); //diretorio
@@ -395,12 +394,9 @@ int finalizaInsert(char *nome, column *c){
             break;
         }
     }
-
     char directory[LEN_DB_NAME_IO];
     strcpy(directory, connected.db_directory);
     strcat(directory, dicio.nArquivo);
-
-	  printf("%s\n", dicio.nArquivo);
 
     if((dados = fopen(directory,"a+b")) == NULL){
       printf("ERROR: cannot open file.\n");
