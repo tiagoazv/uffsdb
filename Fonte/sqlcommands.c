@@ -302,7 +302,8 @@ int finalizaInsert(char *nome, column *c){
     column *auxC, *temp;
     int i = 0, x = 0, t, erro, encontrou, j = 0, flag=0;
     FILE *dados;
-    nodo *raiz, *raizfk;
+    nodo *raiz = NULL;
+    nodo *raizfk = NULL;
 
     struct fs_objects objeto,dicio; // Le dicionario
     tp_table *auxT ; // Le esquema
@@ -320,8 +321,8 @@ int finalizaInsert(char *nome, column *c){
     //------------------------
 
     for(j = 0, temp = c; j < objeto.qtdCampos && temp != NULL; j++, temp = temp->next){
+        printf("%d\n",tab2[j].chave);
         switch(tab2[j].chave){
-			printf("%d\n",tab2[j].chave);
             case NPK:
               erro = SUCCESS;
             break;
@@ -329,7 +330,7 @@ int finalizaInsert(char *nome, column *c){
             case PK:
         				if(flag == 1) break;
                 //monta o nome do arquivo de indice
-                arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * strlen(connected.db_directory));// caminho diretorio de arquivo de indice
+                arquivoIndice = (char *)malloc(sizeof(char) * strlen(connected.db_directory));// caminho diretorio de arquivo de indice
                 strcpy(arquivoIndice, connected.db_directory); //diretorio
                 arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(nome)));
                 strcat(arquivoIndice, nome); //nome da tabela
@@ -338,6 +339,7 @@ int finalizaInsert(char *nome, column *c){
 
         				 // verificacao da chave primaria
         				raiz = constroi_bplus(arquivoIndice);
+                free(arquivoIndice);
         				if(raiz != NULL) {
         					encontrou = buscaChaveBtree(raiz, temp->valorCampo);
         					if (encontrou) {
@@ -354,7 +356,7 @@ int finalizaInsert(char *nome, column *c){
 
             case FK:
               //monta o nome do arquivo de indice da chave estrangeira
-              arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * strlen(connected.db_directory));// caminho diretorio de arquivo de indice
+              arquivoIndice = (char *)malloc(sizeof(char) * strlen(connected.db_directory));// caminho diretorio de arquivo de indice
               strcpy(arquivoIndice, connected.db_directory); //diretorio
       				arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(tab2[j].tabelaApt)));
       				strcat(arquivoIndice, tab2[j].tabelaApt);
@@ -362,6 +364,7 @@ int finalizaInsert(char *nome, column *c){
       				strcat(arquivoIndice, tab2[j].attApt);
 
               raizfk = constroi_bplus(arquivoIndice); //verifica se o atributo referenciado pela FK possui indice B+
+              free(arquivoIndice);
               if(raizfk == NULL) { //se não encontra faz a verificação sem indice b+
         				if (strlen(tab2[j].attApt) != 0 && strlen(tab2[j].tabelaApt) != 0){
         					  erro = verificaChaveFK(nome, temp, tab2[j].nome, temp->valorCampo,
@@ -411,16 +414,15 @@ int finalizaInsert(char *nome, column *c){
     long int offset = ftell(dados);
     for(auxC = c, t = 0; auxC != NULL; auxC = auxC->next, t++){
         if (t >= dicio.qtdCampos) t = 0;
-        
+
         if (auxT[t].chave == PK) {
-			char * nomeAtrib;
-			nomeAtrib = (char*)malloc((strlen(nome)+strlen(auxC->nomeCampo) + strlen(connected.db_directory))* sizeof(char));
-			strcpy(nomeAtrib, connected.db_directory);
-			strcat(nomeAtrib, nome);
-			strcat(nomeAtrib,auxC->nomeCampo);
+      			char * nomeAtrib;
+      			nomeAtrib = (char*)malloc((strlen(nome)+strlen(auxC->nomeCampo) + strlen(connected.db_directory))* sizeof(char));
+      			strcpy(nomeAtrib, connected.db_directory);
+      			strcat(nomeAtrib, nome);
+      			strcat(nomeAtrib,auxC->nomeCampo);
             insere_indice(raiz, auxC->valorCampo, nomeAtrib, offset);
             free(nomeAtrib);
-      
         }
 
         if (auxT[t].tipo == 'S'){ // Grava um dado do tipo string.
@@ -474,11 +476,11 @@ int finalizaInsert(char *nome, column *c){
             while (x < strlen(auxC->valorCampo)){
                 if((auxC->valorCampo[x] < 48 || auxC->valorCampo[x] > 57) && (auxC->valorCampo[x] != 46)){
                     printf("ERROR: column \"%s\" expect double.\n", auxC->nomeCampo);
-					free(tab); // Libera a memoria da estrutura.
-					free(tab2); // Libera a memoria da estrutura.
-					free(auxT); // Libera a memoria da estrutura.
-					free(temp); // Libera a memoria da estrutura.
-					fclose(dados);
+          					free(tab); // Libera a memoria da estrutura.
+          					free(tab2); // Libera a memoria da estrutura.
+          					free(auxT); // Libera a memoria da estrutura.
+          					free(temp); // Libera a memoria da estrutura.
+          					fclose(dados);
                     return ERRO_NO_TIPO_DOUBLE;
                 }
                 x++;
@@ -491,11 +493,11 @@ int finalizaInsert(char *nome, column *c){
 
             if (strlen(auxC->valorCampo) > (sizeof(char))) {
                 printf("ERROR: column \"%s\" expect char.\n", auxC->nomeCampo);
-				free(tab); // Libera a memoria da estrutura.
-				free(tab2); // Libera a memoria da estrutura.
-				free(auxT); // Libera a memoria da estrutura.
-				free(temp); // Libera a memoria da estrutura.
-				fclose(dados);
+        				free(tab); // Libera a memoria da estrutura.
+        				free(tab2); // Libera a memoria da estrutura.
+        				free(auxT); // Libera a memoria da estrutura.
+        				free(temp); // Libera a memoria da estrutura.
+        				fclose(dados);
                 return ERRO_NO_TIPO_CHAR;
             }
             char valorChar = auxC->valorCampo[0];
