@@ -10,7 +10,7 @@ nodo* criaNodo() {
 	novo->filhos = NULL;
 	novo->pai = novo->prox = novo->ant = NULL;
 	novo->data = (char**)malloc(ordem * sizeof(char*));
-	novo->endereco = (long int*)malloc(ordem * sizeof(int));
+	novo->endereco = (long int*)malloc(ordem * sizeof(long int));
 	novo->quant_data = 0;
 	return novo;
 }
@@ -260,7 +260,7 @@ nodo* constroi_bplus(char* nomeTabela){
 		fread(&le, sizeof(char), 1, new);// tenta ler o fim do arquivo
 		if(le == '&') break;
 		fseek(new,-1,SEEK_CUR);
-		
+
 
 	}
 	raiz = aux3;
