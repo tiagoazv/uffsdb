@@ -695,7 +695,7 @@ void printConsulta(Lista *p,Lista *l){
         double *n = (double *)(ij->token);
         printf(" %-10f ", *n);
       }
-      printf("|");
+      if(j->prox) printf("|");
     }
     printf("\n");
   }
@@ -1048,6 +1048,7 @@ int verifyFieldName(char **fieldName, int N){
 //////
 void createTable(rc_insert *t) {
 
+  int temPK = 0;
   char *index_directory = (char *) malloc(sizeof(char) * (strlen(connected.db_directory)));
   char *nome_index = (char *) malloc(sizeof(char) * (strlen(t->objName)));
   strcpy(nome_index, t->objName); // Copia o nome da tabela
@@ -1057,7 +1058,7 @@ void createTable(rc_insert *t) {
       printf("A table name must have no more than %d caracteres.\n",TAMANHO_NOME_TABELA);
       return;
   }
-	int size;
+  int size;
   strcpylower(t->objName, t->objName);        //muda pra minúsculo
   char *tableName = (char*) malloc(sizeof(char)*(TAMANHO_NOME_TABELA+10)),
                     fkTable[TAMANHO_NOME_TABELA], fkColumn[TAMANHO_NOME_CAMPO];
@@ -1102,33 +1103,35 @@ void createTable(rc_insert *t) {
         free(tableName);
         freeTable(tab);
         return;
-  		}
+      }
     }
   }
 
   //Se não existe tabela com esse nome
   if(finalizaTabela(tab) == SUCCESS) {
-	for(int i = 0; i < t->N; i++) {
-		if(t->attribute[i] == PK) {
-		  nome_index = (char *) realloc(nome_index, strlen(nome_index) + strlen(t->columnName[i]));
-		  strcat(nome_index, t->columnName[i]);
-      break;
-		}
-	}
-
-	nome_index = (char *) realloc(nome_index, strlen(connected.db_directory));
-	strcat(index_directory, nome_index);
-	strncpylower(index_directory, index_directory, strlen(index_directory));
-
-	// Iniciliaza o indice B+ (nome_da_tabela + chave_primaria).dat
-	inicializa_indice(index_directory);
-	printf("CREATE TABLE\n");
+  	for(int i = 0; i < t->N && !temPK; i++) {
+  		if(t->attribute[i] == PK) {
+  		  nome_index = (char *) realloc(nome_index, strlen(nome_index) + strlen(t->columnName[i]));
+  		  strcat(nome_index, t->columnName[i]);
+        temPK = 1;
+  		}
+  	}
+    if(temPK) { // A tabela criada possui chave primária
+      nome_index = (char *) realloc(nome_index, strlen(nome_index) + strlen(connected.db_directory));
+      strcat(index_directory, nome_index);
+      strncpylower(index_directory, index_directory, strlen(index_directory));
+      // Iniciliaza o indice B+ (nome_da_tabela + chave_primaria).dat
+      inicializa_indice(index_directory);
+    }
+  	printf("CREATE TABLE\n");
 
   } else { //Tabela já existe, então não é preciso criar o índice b+.
-	printf("ERROR: table already exist\n");
+	   printf("ERROR: table already exist\n");
   }
 
   free(tableName);
+  free(nome_index);
+  free(index_directory);
   if(tab != NULL) freeTable(tab);
 }
 ///////

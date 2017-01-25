@@ -39,7 +39,7 @@ void imprime(nodo* n) {
 //recebe o nome de uma tabela, concatena a extensão .dat e retorna essa junção.
 char* concatena_extensao(char* nomeTabela) {
 	char *concatena;
-	concatena = (char*)malloc(sizeof(char)*(strlen(nomeTabela) + strlen(".dat")));
+	concatena = (char*)malloc(sizeof(char)*(strlen(nomeTabela) + strlen(".dat")+1));
 	strcpy(concatena,nomeTabela);
 	strcat(concatena,".dat");
 	return concatena;
