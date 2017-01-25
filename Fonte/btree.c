@@ -80,7 +80,7 @@ nodo* insereChaveEmNodoFolha(char* ind, long int end, nodo *n){
 /* Insere unicamente o valor da chave em um nodo interno (n) */
 nodo* insereChaveEmNodoInterno(char* ind, nodo* n) {
 	n->data[n->quant_data] = (char *)malloc((strlen(ind)+1) * sizeof(char));
-	n->data[n->quant_data] = ind;
+	strcpy(n->data[n->quant_data], ind);
 	n->quant_data++;
 	n->filhos = (nodo**)realloc(n->filhos, sizeof(nodo**) * (n->quant_data+1)); //aumenta o numero de ponteiros para filhos
 	return n;
@@ -226,7 +226,7 @@ nodo* constroi_bplus(char* nomeTabela){
 				while(aux->pai){
 					if(aux->pai->quant_data < ordem - 1){ //há espaço no pai para a colocação da chave do novo nodo
 						aux->pai = insereChaveEmNodoInterno(palavra,aux->pai);
-						aux->prox->pai = aux->pai;
+						aux2->pai = aux->pai;
 						aux->pai->filhos[aux->pai->quant_data] = aux2;
 						flag= 1;
 						break;
@@ -240,7 +240,8 @@ nodo* constroi_bplus(char* nomeTabela){
 						aux = aux->pai;
 						aux5->pai = aux2->pai;
 						aux2 = aux2->pai;
-						palavra = aux->data[aux->quant_data-1];
+						palavra = (char *)realloc(palavra, sizeof(char)*strlen(aux->data[aux->quant_data-1]));
+						strcpy(palavra, aux->data[aux->quant_data-1]);
 						aux->quant_data--;
 					}
 				}
@@ -256,7 +257,7 @@ nodo* constroi_bplus(char* nomeTabela){
 		}
 		free(palavra);
 		if(aux4)aux = aux4;
-		if (aux->prox) aux = aux->prox;
+		while (aux->prox) aux = aux->prox;
 		fread(&le, sizeof(char), 1, new);// tenta ler o fim do arquivo
 		if(le == '&') break;
 		fseek(new,-1,SEEK_CUR);
@@ -313,21 +314,3 @@ void insere_indice(nodo* raiz, char* ind, char* nomeTabela, long int end){
 	insere_arquivo(aux,nomeTabela);
 	destroi_arvore(aux);
 }
-
-/*int main(){
-	inicializa_indice("tabela1");
-	insere_indice("1","tabela1",1);
-	insere_indice("2","tabela1",2);
-	insere_indice("3","tabela1",3);
-	insere_indice("4","tabela1",4);
-	insere_indice("5","tabela1",5);
-	insere_indice("6","tabela1",6);
-	insere_indice("7","tabela1",7);
-	insere_indice("8","tabela1",8);
-	insere_indice("9","tabela1",9);
-	insere_indice("A","tabela1",10);
-	insere_indice("B","tabela1",11);
-	insere_indice("C","tabela1",12);
-
-	return 0;
-}*/
