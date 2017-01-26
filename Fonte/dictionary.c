@@ -534,6 +534,7 @@ int finalizaTabela(table *t){
     FILE *esquema, *dicionario;
     tp_table *aux;
     int codTbl = quantidadeTabelas() + 1, qtdCampos = 0; // Conta a quantidade de tabelas já no dicionario e soma 1 no codigo dessa nova tabela.
+    //AQUI //int nTuplas = 0;
     char nomeArquivo[TAMANHO_NOME_ARQUIVO];
     memset(nomeArquivo, 0, TAMANHO_NOME_ARQUIVO);
 
@@ -573,6 +574,7 @@ int finalizaTabela(table *t){
     fwrite(&codTbl,sizeof(codTbl),1,dicionario);
     fwrite(&nomeArquivo,sizeof(nomeArquivo),1,dicionario);
     fwrite(&qtdCampos,sizeof(qtdCampos),1,dicionario);
+    //AQUI //fwrite(&nTuplas,sizeof(nTuplas,1,dicionario));
 
     fclose(dicionario);
     return SUCCESS;

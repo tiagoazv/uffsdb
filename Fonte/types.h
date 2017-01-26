@@ -9,9 +9,13 @@ struct fs_objects { // Estrutura usada para carregar fs_objects.dat
     int cod;                            // Código da tabela.
     char nArquivo[TAMANHO_NOME_ARQUIVO];// Nome do arquivo onde estão armazenados os dados da tabela.
     int qtdCampos;                      // Quantidade de campos da tabela.
-    char **caminho;                     // Caminho para os arquivos dos indices b+ da tabela
     int nTuplas;                        // Quantidade de Tuplas na tabela para saber se usa indice b+ na consulta
 };
+
+typedef struct bp_index { // Estrutura usada para armazenar a informação sobre os indices b+ criados em uma tabela
+  char nomeArquivo; // Nome do arquivo onde está armazenado o indice denso
+  char nomeAtributo; // Nome do atributo
+} bp_index;
 
 typedef struct tp_table{ // Estrutura usada para carregar fs_schema.dat
     char nome[TAMANHO_NOME_CAMPO];  // Nome do Campo.                    40bytes
@@ -20,6 +24,7 @@ typedef struct tp_table{ // Estrutura usada para carregar fs_schema.dat
     int chave;                      // Tipo da chave                      4bytes
     char tabelaApt[TAMANHO_NOME_TABELA]; //Nome da Tabela Apontada        20bytes
     char attApt[TAMANHO_NOME_CAMPO];    //Nome do Atributo Apontado       40bytes
+    //char temBp;                   // Diz se o campo possui indice b+    1byte
     struct tp_table *next;          // Encadeamento para o próximo campo.
 }tp_table;
 
@@ -28,7 +33,6 @@ typedef struct column{ // Estrutura utilizada para inserir em uma tabela, exclui
     char nomeCampo[TAMANHO_NOME_CAMPO]; //Nome do Campo.
     char *valorCampo;                   // Valor do Campo.
     struct column *next;                // Encadeamento para o próximo campo.
-    char eh_bp;							// atributo possui indice b+;
 }column;
 
 typedef struct table{ // Estrutura utilizada para criar uma tabela.
