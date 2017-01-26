@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 #ifndef FMACROS // garante que macros.h não seja reincluída
    #include "macros.h"
@@ -835,4 +836,19 @@ void freeColumn(column *colunas) {
 	if (colunas != NULL) {
 		free(colunas);
 	}
+}
+
+
+
+ /* Calculo da Ordem da B+ a partir do número de Tuplas */
+ /* Formula para o cálculo: Log ordem (nTuplas) <= 5 */
+int calculaOrdem (int nTuplas) {
+	int ordem;
+	float aux, aux2;
+	aux = (pow(nTuplas, 0.2));   //Raiz quinta de nTuplas (onde 5 corresponde à altura máxima da arvore)
+	/*Calculo do teto do valor gerado em aux */
+	aux2 = aux - (int) aux;
+	if(aux2 > 0) ordem = aux+1;  
+	else ordem = aux; 
+	return ordem;
 }
