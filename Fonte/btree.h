@@ -1,4 +1,3 @@
-#define ordem 5
 /**
 * estrutura do nodo da arvore b+
 **/
@@ -55,3 +54,7 @@ void insere_arquivo(nodo* inicio, char* nomeTabela);
 void insere_indice(nodo* raiz, char* ind, char* nomeTabela, long int end);
 
 int buscaChaveBtree(nodo* raiz, char* ind);
+
+int calculaOrdem (int nTuplas);
+
+int ordem;

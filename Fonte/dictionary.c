@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <math.h>
 
 #ifndef FMACROS // garante que macros.h não seja reincluída
    #include "macros.h"
@@ -535,7 +534,6 @@ int finalizaTabela(table *t){
     FILE *esquema, *dicionario;
     tp_table *aux;
     int codTbl = quantidadeTabelas() + 1, qtdCampos = 0; // Conta a quantidade de tabelas já no dicionario e soma 1 no codigo dessa nova tabela.
-    //AQUI //int nTuplas = 0;
     char nomeArquivo[TAMANHO_NOME_ARQUIVO];
     memset(nomeArquivo, 0, TAMANHO_NOME_ARQUIVO);
 
@@ -575,7 +573,6 @@ int finalizaTabela(table *t){
     fwrite(&codTbl,sizeof(codTbl),1,dicionario);
     fwrite(&nomeArquivo,sizeof(nomeArquivo),1,dicionario);
     fwrite(&qtdCampos,sizeof(qtdCampos),1,dicionario);
-    //AQUI //fwrite(&nTuplas,sizeof(nTuplas,1,dicionario));
 
     fclose(dicionario);
     return SUCCESS;
@@ -836,19 +833,4 @@ void freeColumn(column *colunas) {
 	if (colunas != NULL) {
 		free(colunas);
 	}
-}
-
-
-
- /* Calculo da Ordem da B+ a partir do número de Tuplas */
- /* Formula para o cálculo: Log ordem (nTuplas) <= 5 */
-int calculaOrdem (int nTuplas) {
-	int ordem;
-	float aux, aux2;
-	aux = (pow(nTuplas, 0.2));   //Raiz quinta de nTuplas (onde 5 corresponde à altura máxima da arvore)
-	/*Calculo do teto do valor gerado em aux */
-	aux2 = aux - (int) aux;
-	if(aux2 > 0) ordem = aux+1;  
-	else ordem = aux; 
-	return ordem;
 }

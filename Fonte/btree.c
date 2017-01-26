@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "btree.h"
 
 //cria novo nodo vazio
@@ -158,17 +159,14 @@ void destroi_arvore(nodo* n) {
 nodo* constroi_bplus(char* nomeTabela){
 	FILE * new = NULL;
 	char le;
-	int le2 = 0;
+	int le2 = 0, cont = 0, flag = 0, nTuplas = 0;
 	char* palavra;
-	int cont = 0;
 	nodo *aux = NULL;
 	nodo *raiz = NULL;
 	nodo *aux2 = NULL;
 	nodo *aux3 = NULL;
 	nodo *aux4 = NULL;
 	nodo *aux5 = NULL;
-
-	int flag = 0;
 
 	char* nomeArquivo = concatena_extensao(nomeTabela);
 	new = fopen(nomeArquivo,"r");
@@ -181,12 +179,13 @@ nodo* constroi_bplus(char* nomeTabela){
 	fread(&le, sizeof(char),1,new);
 	if(le == '@'){
 		fclose(new);
+		ordem = 0;
 		return NULL;
 	}
 	fseek(new,0,SEEK_SET);
 
 	while(1){
-
+		nTuplas++;
 		palavra = (char*)malloc(sizeof(char));
 		while(le != '$'){
 			fread(&le, sizeof(char),1,new);
@@ -261,13 +260,12 @@ nodo* constroi_bplus(char* nomeTabela){
 		fread(&le, sizeof(char), 1, new);// tenta ler o fim do arquivo
 		if(le == '&') break;
 		fseek(new,-1,SEEK_CUR);
-
-
 	}
 	raiz = aux3;
 	while(raiz->pai){
 		raiz = raiz->pai;
 	}
+	ordem = calculaOrdem(nTuplas+1);
 	return raiz;
 }
 
@@ -313,4 +311,17 @@ void insere_indice(nodo* raiz, char* ind, char* nomeTabela, long int end){
 	}
 	insere_arquivo(aux,nomeTabela);
 	destroi_arvore(aux);
+}
+
+/* Calculo da Ordem da B+ a partir do número de Tuplas */
+/* Formula para o cálculo: Log ordem (nTuplas) <= 5 */
+int calculaOrdem (int nTuplas) {
+ int ordem;
+ float aux, aux2;
+ aux = (pow(nTuplas, 0.2));   //Raiz quinta de nTuplas (onde 5 corresponde à altura máxima da arvore)
+ /*Calculo do teto do valor gerado em aux */
+ aux2 = aux - (int) aux;
+ if(aux2 > 0) ordem = aux+1;
+ else ordem = aux;
+ return ordem;
 }

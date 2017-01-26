@@ -114,16 +114,3 @@ void printTable(char *);
 void freeTp_table(tp_table **, int );
 void freeTable(table *);
 void freeColumn(column *);
-
-
-
-
-
-
-
-
-
-
-
-
-

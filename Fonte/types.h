@@ -9,7 +9,6 @@ struct fs_objects { // Estrutura usada para carregar fs_objects.dat
     int cod;                            // Código da tabela.
     char nArquivo[TAMANHO_NOME_ARQUIVO];// Nome do arquivo onde estão armazenados os dados da tabela.
     int qtdCampos;                      // Quantidade de campos da tabela.
-    int nTuplas;                        // Quantidade de Tuplas na tabela para saber se usa indice b+ na consulta
 };
 
 typedef struct bp_index { // Estrutura usada para armazenar a informação sobre os indices b+ criados em uma tabela
