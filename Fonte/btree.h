@@ -58,3 +58,5 @@ int buscaChaveBtree(nodo* raiz, char* ind);
 int calculaOrdem (int nTuplas);
 
 int ordem;
+
+int ntuplas;

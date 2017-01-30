@@ -159,7 +159,7 @@ void destroi_arvore(nodo* n) {
 nodo* constroi_bplus(char* nomeTabela){
 	FILE * new = NULL;
 	char le;
-	int le2 = 0, cont = 0, flag = 0, nTuplas = 0;
+	int le2 = 0, cont = 0, flag = 0;
 	char* palavra;
 	nodo *aux = NULL;
 	nodo *raiz = NULL;
@@ -179,13 +179,18 @@ nodo* constroi_bplus(char* nomeTabela){
 	fread(&le, sizeof(char),1,new);
 	if(le == '@'){
 		fclose(new);
+		ntuplas = 0;
 		ordem = 0;
 		return NULL;
 	}
+	//CALCULO DA ORDEM
+	fseek(new,0,SEEK_END);
+	fread(&ntuplas, sizeof(int),1,new);
+	ordem = calculaOrdem(ntuplas);
+	
 	fseek(new,0,SEEK_SET);
 
 	while(1){
-		nTuplas++;
 		palavra = (char*)malloc(sizeof(char));
 		while(le != '$'){
 			fread(&le, sizeof(char),1,new);
@@ -265,7 +270,6 @@ nodo* constroi_bplus(char* nomeTabela){
 	while(raiz->pai){
 		raiz = raiz->pai;
 	}
-	ordem = calculaOrdem(nTuplas+1);
 	return raiz;
 }
 
@@ -298,6 +302,9 @@ void insere_arquivo(nodo* inicio, char* nomeTabela){
 	}
 	char2 = '&';
 	fwrite(&char2,sizeof(char),1,new);
+	ntuplas++;
+	printf("%d\n\n",ntuplas);
+	fwrite(&ntuplas,sizeof(int),1,new);
 	fclose(new);
 }
 
