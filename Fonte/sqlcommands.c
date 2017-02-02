@@ -406,19 +406,18 @@ int finalizaInsert(char *nome, column *c){
   		free(tab2); // Libera a memoria da estrutura.
       return ERRO_ABRIR_ARQUIVO;
 	   }
-
     long int offset = ftell(dados);
     for(auxC = c, t = 0; auxC != NULL; auxC = auxC->next, t++){
         if (t >= dicio.qtdCampos) t = 0;
 
         if (auxT[t].chave == PK) {
-      			char * nomeAtrib;
-      			nomeAtrib = (char*)malloc((strlen(nome)+strlen(auxC->nomeCampo) + strlen(connected.db_directory))* sizeof(char));
-      			strcpy(nomeAtrib, connected.db_directory);
-      			strcat(nomeAtrib, nome);
-      			strcat(nomeAtrib,auxC->nomeCampo);
+			char * nomeAtrib;
+      		nomeAtrib = (char*)malloc((strlen(nome)+strlen(auxC->nomeCampo) + strlen(connected.db_directory))* sizeof(char));
+      		strcpy(nomeAtrib, connected.db_directory);
+      		strcat(nomeAtrib, nome);
+      		strcat(nomeAtrib,auxC->nomeCampo);
             insere_indice(raiz, auxC->valorCampo, nomeAtrib, offset);
-            free(nomeAtrib);
+            //free(nomeAtrib);
         }
 
         if (auxT[t].tipo == 'S'){ // Grava um dado do tipo string.
@@ -498,15 +497,15 @@ int finalizaInsert(char *nome, column *c){
             }
             char valorChar = auxC->valorCampo[0];
             fwrite(&valorChar,sizeof(valorChar),1,dados);
+            
         }
 
     }
-
   fclose(dados);
-  free(tab); // Libera a memoria da estrutura.
-  free(tab2); // Libera a memoria da estrutura.
-  free(auxT); // Libera a memoria da estrutura.
-  free(temp); // Libera a memoria da estrutura.
+  //free(tab); // Libera a memoria da estrutura.
+  //free(tab2); // Libera a memoria da estrutura.
+  //free(auxT); // Libera a memoria da estrutura.
+  //free(temp); // Libera a memoria da estrutura.
   return SUCCESS;
 }
 
@@ -936,10 +935,44 @@ int excluirTabela(char *nomeTabela) {
     struct fs_objects objeto, objeto1;
     tp_table *esquema, *esquema1;
     int x,erro, i, j, k, l, qtTable;
-    char str[20];
+    char *index_directory = NULL;
+	char *nome_index = NULL, *arquivo = NULL;
+	char *arquivo2 = NULL;
+	char str[20];
     char dat[5] = ".dat";
+    struct fs_objects dicio;
+    tp_table *auxT ;
+    FILE * arq = NULL;
+   
     memset(str, '\0', 20);
-
+    //Acha o caminho dos arquivos de indice
+    index_directory = (char *) malloc(sizeof(char) * (strlen(connected.db_directory)));
+    nome_index = (char *) malloc(sizeof(char) * (strlen(nomeTabela)));
+	strcpy(nome_index, nomeTabela); // Copia o nome da tabela
+	strcpy(index_directory, connected.db_directory); // Copia o diretório atual
+    strcpylower(nome_index, nome_index);       //muda pra minúsculo
+    arquivo = (char*)malloc(sizeof(char) * (strlen(nome_index) + strlen(index_directory)));
+    strcpy(arquivo,index_directory);
+    strcat(arquivo,nome_index);
+    auxT = abreTabela(nomeTabela, &dicio, &auxT);
+	
+	//Concatena atributo para verificação do arquivo de indice
+    while (auxT!=NULL){
+		arquivo2 = (char*)malloc(sizeof(char) * (strlen(arquivo)+ strlen(auxT->nome) + strlen(dat)));
+		strcpy(arquivo2,arquivo);
+		strcat(arquivo2,auxT->nome);
+		strcat(arquivo2,dat);
+	//Se encontrar, remove o arquivo de indice	
+		if ((arq = fopen(arquivo2,"r") )!= NULL){
+			fclose(arq);
+			remove(arquivo2);
+		}
+		free(arquivo2);
+		auxT = auxT->next;
+	}
+	free(nome_index);
+	free(index_directory);
+	free(arquivo);
     if (!verificaNomeTabela(nomeTabela)) {
         printf("ERROR: table \"%s\" does not exist.\n", nomeTabela);
         return ERRO_NOME_TABELA;
@@ -952,6 +985,7 @@ int excluirTabela(char *nomeTabela) {
     qtTable = quantidadeTabelas();
 
     char **tupla = (char **)malloc(sizeof(char **)*qtTable);
+    
     memset(tupla, 0, qtTable);
 
     for (i=0; i < qtTable; i++) {
@@ -1020,12 +1054,12 @@ int excluirTabela(char *nomeTabela) {
     if(procuraObjectArquivo(nomeTabela) != 0) {
         free(bufferpoll);
         return ERRO_REMOVER_ARQUIVO_OBJECT;
-    }
-
+    }	
    	strcpy(directory, connected.db_directory);
     strcat(directory, str);
     remove(directory);
     free(bufferpoll);
+    
     printf("DROP TABLE\n");
     return SUCCESS;
 }
