@@ -11,11 +11,6 @@ struct fs_objects { // Estrutura usada para carregar fs_objects.dat
     int qtdCampos;                      // Quantidade de campos da tabela.
 };
 
-typedef struct bp_index { // Estrutura usada para armazenar a informação sobre os indices b+ criados em uma tabela
-  char nomeArquivo; // Nome do arquivo onde está armazenado o indice denso
-  char nomeAtributo; // Nome do atributo
-} bp_index;
-
 typedef struct tp_table{ // Estrutura usada para carregar fs_schema.dat
     char nome[TAMANHO_NOME_CAMPO];  // Nome do Campo.                    40bytes
     char tipo;                      // Tipo do Campo.                     1bytes
@@ -23,7 +18,6 @@ typedef struct tp_table{ // Estrutura usada para carregar fs_schema.dat
     int chave;                      // Tipo da chave                      4bytes
     char tabelaApt[TAMANHO_NOME_TABELA]; //Nome da Tabela Apontada        20bytes
     char attApt[TAMANHO_NOME_CAMPO];    //Nome do Atributo Apontado       40bytes
-    //char temBp;                   // Diz se o campo possui indice b+    1byte
     struct tp_table *next;          // Encadeamento para o próximo campo.
 }tp_table;
 
