@@ -329,11 +329,10 @@ int finalizaInsert(char *nome, column *c){
             case PK:
         		if(flag == 1) break;
                 //monta o nome do arquivo de indice
-                arquivoIndice = (char *)malloc(sizeof(char) * strlen(connected.db_directory));// caminho diretorio de arquivo de indice
+                arquivoIndice = (char *)malloc(sizeof(char) *
+                  (strlen(connected.db_directory) + strlen(nome) + strlen(tab2[j].nome)));
                 strcpy(arquivoIndice, connected.db_directory); //diretorio
-                arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(nome)));
                 strcat(arquivoIndice, nome); //nome da tabela
-        				arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(tab2[j].nome)));
         				strcat(arquivoIndice, tab2[j].nome); //nome do atributo
 
         				 // verificacao da chave primaria
@@ -355,11 +354,10 @@ int finalizaInsert(char *nome, column *c){
 
             case FK:
               //monta o nome do arquivo de indice da chave estrangeira
-              arquivoIndice = (char *)malloc(sizeof(char) * strlen(connected.db_directory));// caminho diretorio de arquivo de indice
+              arquivoIndice = (char *)malloc(sizeof(char) *
+                (strlen(connected.db_directory) + strlen(tab2[j].tabelaApt) + strlen(tab2[j].attApt)));// caminho diretorio de arquivo de indice
               strcpy(arquivoIndice, connected.db_directory); //diretorio
-      				arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(tab2[j].tabelaApt)));
       				strcat(arquivoIndice, tab2[j].tabelaApt);
-              arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(tab2[j].attApt)));
       				strcat(arquivoIndice, tab2[j].attApt);
 
               raizfk = constroi_bplus(arquivoIndice); //verifica se o atributo referenciado pela FK possui indice B+
@@ -411,7 +409,7 @@ int finalizaInsert(char *nome, column *c){
         if (t >= dicio.qtdCampos) t = 0;
 
         if (auxT[t].chave == PK) {
-			char * nomeAtrib;
+			    char * nomeAtrib;
       		nomeAtrib = (char*)malloc((strlen(nome)+strlen(auxC->nomeCampo) + strlen(connected.db_directory))* sizeof(char));
       		strcpy(nomeAtrib, connected.db_directory);
       		strcat(nomeAtrib, nome);
