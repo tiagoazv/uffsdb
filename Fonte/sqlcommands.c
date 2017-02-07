@@ -497,7 +497,7 @@ int finalizaInsert(char *nome, column *c){
             }
             char valorChar = auxC->valorCampo[0];
             fwrite(&valorChar,sizeof(valorChar),1,dados);
-            
+
         }
 
     }
@@ -943,7 +943,7 @@ int excluirTabela(char *nomeTabela) {
     struct fs_objects dicio;
     tp_table *auxT ;
     FILE * arq = NULL;
-   
+
     memset(str, '\0', 20);
     //Acha o caminho dos arquivos de indice
     index_directory = (char *) malloc(sizeof(char) * (strlen(connected.db_directory)));
@@ -955,14 +955,14 @@ int excluirTabela(char *nomeTabela) {
     strcpy(arquivo,index_directory);
     strcat(arquivo,nome_index);
     auxT = abreTabela(nomeTabela, &dicio, &auxT);
-	
+
 	//Concatena atributo para verificação do arquivo de indice
     while (auxT!=NULL){
 		arquivo2 = (char*)malloc(sizeof(char) * (strlen(arquivo)+ strlen(auxT->nome) + strlen(dat)));
 		strcpy(arquivo2,arquivo);
 		strcat(arquivo2,auxT->nome);
 		strcat(arquivo2,dat);
-	//Se encontrar, remove o arquivo de indice	
+	//Se encontrar, remove o arquivo de indice
 		if ((arq = fopen(arquivo2,"r") )!= NULL){
 			fclose(arq);
 			remove(arquivo2);
@@ -985,7 +985,7 @@ int excluirTabela(char *nomeTabela) {
     qtTable = quantidadeTabelas();
 
     char **tupla = (char **)malloc(sizeof(char **)*qtTable);
-    
+
     memset(tupla, 0, qtTable);
 
     for (i=0; i < qtTable; i++) {
@@ -1054,12 +1054,12 @@ int excluirTabela(char *nomeTabela) {
     if(procuraObjectArquivo(nomeTabela) != 0) {
         free(bufferpoll);
         return ERRO_REMOVER_ARQUIVO_OBJECT;
-    }	
+    }
    	strcpy(directory, connected.db_directory);
     strcat(directory, str);
     remove(directory);
     free(bufferpoll);
-    
+
     printf("DROP TABLE\n");
     return SUCCESS;
 }
@@ -1081,13 +1081,6 @@ int verifyFieldName(char **fieldName, int N){
 
 //////
 void createTable(rc_insert *t) {
-
-  int temPK = 0;
-  char *index_directory = (char *) malloc(sizeof(char) * (strlen(connected.db_directory)));
-  char *nome_index = (char *) malloc(sizeof(char) * (strlen(t->objName)));
-  strcpy(nome_index, t->objName); // Copia o nome da tabela
-  strcpy(index_directory, connected.db_directory); // Copia o diretório atual
-
   if(strlen(t->objName) > TAMANHO_NOME_TABELA){
       printf("A table name must have no more than %d caracteres.\n",TAMANHO_NOME_TABELA);
       return;
@@ -1143,29 +1136,23 @@ void createTable(rc_insert *t) {
 
   //Se não existe tabela com esse nome
   if(finalizaTabela(tab) == SUCCESS) {
-  	for(int i = 0; i < t->N && !temPK; i++) {
-  		if(t->attribute[i] == PK) {
-  		  nome_index = (char *) realloc(nome_index, strlen(nome_index) + strlen(t->columnName[i]));
-  		  strcat(nome_index, t->columnName[i]);
-        temPK = 1;
+  	for(int i = 0; i < t->N; i++) {
+  		if(t->attribute[i] == PK) { //procura o atributo PK e cria o arquivo de índice
+        char *aux_nome_index = NULL;
+  		  aux_nome_index = (char *)malloc(strlen(connected.db_directory) + strlen(t->objName) + strlen(t->columnName[i]));
+        strcpy(aux_nome_index, connected.db_directory);
+        strcat(aux_nome_index, t->objName);
+  		  strcat(aux_nome_index, t->columnName[i]);
+        inicializa_indice(aux_nome_index);
+        break;
   		}
   	}
-    if(temPK) { // A tabela criada possui chave primária
-      nome_index = (char *) realloc(nome_index, strlen(nome_index) + strlen(connected.db_directory));
-      strcat(index_directory, nome_index);
-      strncpylower(index_directory, index_directory, strlen(index_directory));
-      // Iniciliaza o indice B+ (nome_da_tabela + chave_primaria).dat
-      inicializa_indice(index_directory);
-    }
   	printf("CREATE TABLE\n");
-
   } else { //Tabela já existe, então não é preciso criar o índice b+.
-	   printf("ERROR: table already exist\n");
+	  printf("ERROR: table already exist\n");
   }
 
   free(tableName);
-  free(nome_index);
-  free(index_directory);
   if(tab != NULL) freeTable(tab);
 }
 ///////
