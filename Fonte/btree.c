@@ -302,7 +302,7 @@ void insere_arquivo(nodo* inicio, char* nomeTabela){
 	}
 	char2 = '&';
 	fwrite(&char2,sizeof(char),1,new);
-	ntuplas++;
+	ntuplas++; 
 	fwrite(&ntuplas,sizeof(int),1,new);
 	fclose(new);
 }

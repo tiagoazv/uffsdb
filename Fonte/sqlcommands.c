@@ -335,21 +335,21 @@ int finalizaInsert(char *nome, column *c){
                 strcat(arquivoIndice, nome); //nome da tabela
         				strcat(arquivoIndice, tab2[j].nome); //nome do atributo
 
-        				 // verificacao da chave primaria
-        				raiz = constroi_bplus(arquivoIndice);
+        		// verificacao da chave primaria
+        		raiz = constroi_bplus(arquivoIndice);
                 free(arquivoIndice);
-        				if(raiz != NULL) {
-        					encontrou = buscaChaveBtree(raiz, temp->valorCampo);
-        					if (encontrou) {
-        						printf("ERROR: duplicate key value violates unique constraint \"%s_pkey\"\nDETAIL:  Key (%s)=(%s) already exists.\n",nome,temp->nomeCampo,temp->valorCampo);
-        						free(auxT); // Libera a memoria da estrutura.
-        						//free(temp); // Libera a memoria da estrutura.
-        						free(tab); // Libera a memoria da estrutura.
-        						free(tab2); // Libera a memoria da estrutura.
-        						return ERRO_CHAVE_PRIMARIA;
-        					}
-        				}
-        				flag = 1;
+        		if(raiz != NULL) {
+        			encontrou = buscaChaveBtree(raiz, temp->valorCampo);
+        			if (encontrou) {
+        				printf("ERROR: duplicate key value violates unique constraint \"%s_pkey\"\nDETAIL:  Key (%s)=(%s) already exists.\n",nome,temp->nomeCampo,temp->valorCampo);
+        				free(auxT); // Libera a memoria da estrutura.
+        				//free(temp); // Libera a memoria da estrutura.
+        				free(tab); // Libera a memoria da estrutura.
+        				free(tab2); // Libera a memoria da estrutura.
+        				return ERRO_CHAVE_PRIMARIA;
+        			}
+        		}
+        		flag = 1;
             break;
 
             case FK:
