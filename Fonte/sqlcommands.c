@@ -333,64 +333,62 @@ int finalizaInsert(char *nome, column *c){
                 strcpy(arquivoIndice, connected.db_directory); //diretorio
                 arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(nome)));
                 strcat(arquivoIndice, nome); //nome da tabela
-        				arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(tab2[j].nome)));
-        				strcat(arquivoIndice, tab2[j].nome); //nome do atributo
+				arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(tab2[j].nome)));
+        		strcat(arquivoIndice, tab2[j].nome); //nome do atributo
 
-        				 // verificacao da chave primaria
-        				raiz = constroi_bplus(arquivoIndice);
+        		// verificacao da chave primaria
+        		raiz = constroi_bplus(arquivoIndice);
                 free(arquivoIndice);
-        				if(raiz != NULL) {
-        					encontrou = buscaChaveBtree(raiz, temp->valorCampo);
-        					if (encontrou) {
-        						printf("ERROR: duplicate key value violates unique constraint \"%s_pkey\"\nDETAIL:  Key (%s)=(%s) already exists.\n",nome,temp->nomeCampo,temp->valorCampo);
-        						free(auxT); // Libera a memoria da estrutura.
-        						//free(temp); // Libera a memoria da estrutura.
-        						free(tab); // Libera a memoria da estrutura.
-        						free(tab2); // Libera a memoria da estrutura.
-        						return ERRO_CHAVE_PRIMARIA;
-        					}
-        				}
-        				flag = 1;
+        		if(raiz != NULL) {
+        			encontrou = buscaChaveBtree(raiz, temp->valorCampo);
+        			if (encontrou) {
+        				printf("ERROR: duplicate key value violates unique constraint \"%s_pkey\"\nDETAIL:  Key (%s)=(%s) already exists.\n",nome,temp->nomeCampo,temp->valorCampo);
+        				free(auxT); // Libera a memoria da estrutura.
+        				//free(temp); // Libera a memoria da estrutura.
+        				free(tab); // Libera a memoria da estrutura.
+        				free(tab2); // Libera a memoria da estrutura.
+        				return ERRO_CHAVE_PRIMARIA;
+        			}
+        		}
+        		flag = 1;
             break;
 
             case FK:
-              //monta o nome do arquivo de indice da chave estrangeira
-              arquivoIndice = (char *)malloc(sizeof(char) * strlen(connected.db_directory));// caminho diretorio de arquivo de indice
-              strcpy(arquivoIndice, connected.db_directory); //diretorio
-      				arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(tab2[j].tabelaApt)));
-      				strcat(arquivoIndice, tab2[j].tabelaApt);
-              arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(tab2[j].attApt)));
-      				strcat(arquivoIndice, tab2[j].attApt);
+				//monta o nome do arquivo de indice da chave estrangeira
+				arquivoIndice = (char *)malloc(sizeof(char) * strlen(connected.db_directory));// caminho diretorio de arquivo de indice
+				strcpy(arquivoIndice, connected.db_directory); //diretorio
+				arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(tab2[j].tabelaApt)));
+      			strcat(arquivoIndice, tab2[j].tabelaApt);
+				arquivoIndice = (char *)realloc(arquivoIndice, sizeof(char) * (strlen(arquivoIndice) + strlen(tab2[j].attApt)));
+      			strcat(arquivoIndice, tab2[j].attApt);
 
-              raizfk = constroi_bplus(arquivoIndice); //verifica se o atributo referenciado pela FK possui indice B+
-              free(arquivoIndice);
-              if(raizfk == NULL) { //se não encontra faz a verificação sem indice b+
-        				if (strlen(tab2[j].attApt) != 0 && strlen(tab2[j].tabelaApt) != 0){
-        					  erro = verificaChaveFK(nome, temp, tab2[j].nome, temp->valorCampo,
-                                            tab2[j].tabelaApt, tab2[j].attApt);
-                    if (erro != SUCCESS){
-                        printf("ERROR: invalid reference to \"%s.%s\". The value \"%s\" does not exist.\n", tab2[j].tabelaApt,tab2[j].attApt,temp->valorCampo);
-
-            						free(auxT); // Libera a memoria da estrutura.
-            						free(temp); // Libera a memoria da estrutura.
-                        free(tab); // Libera a memoria da estrutura.
-  					            free(tab2); // Libera a memoria da estrutura.
-                        return ERRO_CHAVE_ESTRANGEIRA;
-                    }
-                }
-              } else { //atributo referenciado possui indice B+
-                  encontrou = buscaChaveBtree(raizfk, temp->valorCampo);
-                  if (!encontrou) {
-                    printf("ERROR: invalid reference to \"%s.%s\". The value \"%s\" does not exist.\n", tab2[j].tabelaApt,tab2[j].attApt,temp->valorCampo);
-
-                    free(auxT); // Libera a memoria da estrutura.
-                    free(temp); // Libera a memoria da estrutura.
-                    free(tab); // Libera a memoria da estrutura.
-                    free(tab2); // Libera a memoria da estrutura.
-                    return ERRO_CHAVE_ESTRANGEIRA;
-                  }
-                  erro = SUCCESS;
-              }
+				raizfk = constroi_bplus(arquivoIndice); //verifica se o atributo referenciado pela FK possui indice B+
+				free(arquivoIndice);
+				if(raizfk == NULL) { //se não encontra faz a verificação sem indice b+
+        			if (strlen(tab2[j].attApt) != 0 && strlen(tab2[j].tabelaApt) != 0){
+						erro = verificaChaveFK(nome, temp, tab2[j].nome, temp->valorCampo,tab2[j].tabelaApt, tab2[j].attApt);
+						if (erro != SUCCESS){
+							printf("ERROR: invalid reference to \"%s.%s\". The value \"%s\" does not exist.\n", tab2[j].tabelaApt,tab2[j].attApt,temp->valorCampo);
+							free(auxT); // Libera a memoria da estrutura.
+            				free(temp); // Libera a memoria da estrutura.
+							free(tab); // Libera a memoria da estrutura.
+							free(tab2); // Libera a memoria da estrutura.
+							return ERRO_CHAVE_ESTRANGEIRA;
+						}
+					}
+				} 
+				else { //atributo referenciado possui indice B+
+					encontrou = buscaChaveBtree(raizfk, temp->valorCampo);
+					if (!encontrou) {
+						printf("ERROR: invalid reference to \"%s.%s\". The value \"%s\" does not exist.\n", tab2[j].tabelaApt,tab2[j].attApt,temp->valorCampo);
+						free(auxT); // Libera a memoria da estrutura.
+						free(temp); // Libera a memoria da estrutura.
+						free(tab); // Libera a memoria da estrutura.
+						free(tab2); // Libera a memoria da estrutura.
+						return ERRO_CHAVE_ESTRANGEIRA;
+					}
+					erro = SUCCESS;
+				}
             break;
         }
     }
