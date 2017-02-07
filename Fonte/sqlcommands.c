@@ -392,6 +392,7 @@ int finalizaInsert(char *nome, column *c){
             break;
         }
     }
+    flag = 0;
     char directory[LEN_DB_NAME_IO];
     strcpy(directory, connected.db_directory);
     strcat(directory, dicio.nArquivo);
@@ -408,14 +409,15 @@ int finalizaInsert(char *nome, column *c){
     for(auxC = c, t = 0; auxC != NULL; auxC = auxC->next, t++){
         if (t >= dicio.qtdCampos) t = 0;
 
-        if (auxT[t].chave == PK) {
-			    char * nomeAtrib;
+        if (auxT[t].chave == PK && flag == 0) {
+			char * nomeAtrib;
       		nomeAtrib = (char*)malloc((strlen(nome)+strlen(auxC->nomeCampo) + strlen(connected.db_directory))* sizeof(char));
       		strcpy(nomeAtrib, connected.db_directory);
       		strcat(nomeAtrib, nome);
       		strcat(nomeAtrib,auxC->nomeCampo);
             insere_indice(raiz, auxC->valorCampo, nomeAtrib, offset);
-            //free(nomeAtrib);
+            free(nomeAtrib);
+            flag = 1;
         }
 
         if (auxT[t].tipo == 'S'){ // Grava um dado do tipo string.
