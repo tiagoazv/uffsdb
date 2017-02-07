@@ -502,10 +502,10 @@ int finalizaInsert(char *nome, column *c){
 
     }
   fclose(dados);
-  //free(tab); // Libera a memoria da estrutura.
-  //free(tab2); // Libera a memoria da estrutura.
-  //free(auxT); // Libera a memoria da estrutura.
-  //free(temp); // Libera a memoria da estrutura.
+  free(tab); // Libera a memoria da estrutura.
+  free(tab2); // Libera a memoria da estrutura.
+  free(auxT); // Libera a memoria da estrutura.
+  free(temp); // Libera a memoria da estrutura.
   return SUCCESS;
 }
 
