@@ -39,6 +39,7 @@
 #define TAMANHO_NOME_CAMPO 40   // Tamanho do nome dos campos de uma tabela.
 #define TAMANHO_NOME_TABELA 20  // Tamanho do nome da tabela.
 #define TAMANHO_NOME_ARQUIVO 20 // Tamanho do nome do arquivo.
+#define TAMANHO_NOME_INDICE 40 // Tamanho do nome do arquivo de indice.
 #define QTD_DB 100
 #define LEN_DB_NAME 20
 #define LEN_DB_NAME_IO (LEN_DB_NAME << 1)

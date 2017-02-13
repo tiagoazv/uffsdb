@@ -325,6 +325,7 @@ struct fs_objects leObjeto(char *nTabela){
     char *tupla = (char *)malloc(sizeof(char)*TAMANHO_NOME_TABELA);
     memset(tupla, '\0', TAMANHO_NOME_TABELA);
     int cod;
+    int i = 0, cont = 0;
 
     char directory[LEN_DB_NAME_IO];
     strcpy(directory, connected.db_directory);
@@ -363,12 +364,23 @@ struct fs_objects leObjeto(char *nTabela){
             strcpylower(objeto.nArquivo, tupla);
             fread(&cod,sizeof(int),1,dicionario);
             objeto.qtdCampos = cod;
+			fread(&i,sizeof(int),1,dicionario);
+			objeto.qtdIndice = i;
+			printf("%d\n", i);
+			objeto.nIndice = (char **) malloc(i * sizeof(char*));
+			while(i) {
+				objeto.nIndice[cont] = (char *) malloc(TAMANHO_NOME_INDICE * sizeof(char));
+				fread(objeto.nIndice[cont], TAMANHO_NOME_INDICE, 1, dicionario);
+				printf("%s\n", objeto.nIndice[cont]);
+				i--;
+				cont++;
+			}
 
             free(tupla);
             fclose(dicionario);
             return objeto;
         }
-        fseek(dicionario, 28, 1); // Pula a quantidade de caracteres para a proxima verificacao(4B do codigo, 20B do nome do arquivo e 4B da quantidade de campos).
+        fseek(dicionario, 28 + (objeto.qtdIndice * TAMANHO_NOME_INDICE), 1); // Pula a quantidade de caracteres para a proxima verificacao(4B do codigo, 20B do nome do arquivo e 4B da quantidade de campos).
     }
     free(tupla);
     fclose(dicionario);
@@ -533,7 +545,9 @@ int finalizaTabela(table *t){
 
     FILE *esquema, *dicionario;
     tp_table *aux;
+    int qtdIndice = 0;
     int codTbl = quantidadeTabelas() + 1, qtdCampos = 0; // Conta a quantidade de tabelas já no dicionario e soma 1 no codigo dessa nova tabela.
+    char *indiceDir = NULL;
     char nomeArquivo[TAMANHO_NOME_ARQUIVO];
     memset(nomeArquivo, 0, TAMANHO_NOME_ARQUIVO);
 
@@ -553,6 +567,15 @@ int finalizaTabela(table *t){
         fwrite(&aux->chave     ,sizeof(aux->chave)     ,1,esquema);  //Chave do campo
         fwrite(&aux->tabelaApt ,sizeof(aux->tabelaApt) ,1,esquema);  //Tabela Apontada
         fwrite(&aux->attApt    ,sizeof(aux->attApt)    ,1,esquema);  //Atributo apontado.
+	
+		if(aux->chave == PK && !qtdIndice) {
+			indiceDir = (char *) calloc(TAMANHO_NOME_INDICE, sizeof(char));
+			strcpy(indiceDir, connected.db_directory);
+			strcat(indiceDir, t->nome);
+			strcat(indiceDir, aux->nome);
+			strcat(indiceDir, ".dat\0");
+			qtdIndice++;
+		}
 
         qtdCampos++; // Soma quantidade total de campos inseridos.
     }
@@ -573,8 +596,11 @@ int finalizaTabela(table *t){
     fwrite(&codTbl,sizeof(codTbl),1,dicionario);
     fwrite(&nomeArquivo,sizeof(nomeArquivo),1,dicionario);
     fwrite(&qtdCampos,sizeof(qtdCampos),1,dicionario);
+    fwrite(&qtdIndice,sizeof(int),1,dicionario);
+    fwrite(indiceDir,TAMANHO_NOME_INDICE,1,dicionario);
 
     fclose(dicionario);
+    if(indiceDir != NULL) free(indiceDir);
     return SUCCESS;
 }
 ////
@@ -713,7 +739,7 @@ void printTable(char *tbl){
 			fseek(dicionario, -1, 1);
 			fread(tupla, sizeof(char), TAMANHO_NOME_TABELA, dicionario);
 			printf(" %-10s | %-15s | %-10s | %-10s \n", "public", tupla, "tuple", connected.db_name);
-			fseek(dicionario, 28, 1);
+			fseek(dicionario, TAMANHO_NOME_INDICE + 4 + 28, 1);
 			i++;
 		}
 		fclose(dicionario);
