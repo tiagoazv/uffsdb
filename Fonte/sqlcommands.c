@@ -958,7 +958,7 @@ int excluirTabela(char *nomeTabela) {
 
 	//Concatena atributo para verificação do arquivo de indice
     while (auxT!=NULL){
-		arquivo2 = (char*)malloc(sizeof(char) * (strlen(arquivo)+ strlen(auxT->nome) + strlen(dat)));
+		arquivo2 = (char*)malloc(sizeof(char) * (strlen(arquivo)+ strlen(auxT->nome) + strlen(dat)+1));
 		strcpy(arquivo2,arquivo);
 		strcat(arquivo2,auxT->nome);
 		strcat(arquivo2,dat);
@@ -1008,7 +1008,7 @@ int excluirTabela(char *nomeTabela) {
         //coloca o nome de todas as tabelas em tupla
         fread(tupla[k], sizeof(char), TAMANHO_NOME_TABELA , dicionario);
         k++;
-        fseek(dicionario, 28, 1);
+        fseek(dicionario, 72, 1);
     }
     fclose(dicionario);
     for(i = 0; i < objeto.qtdCampos; i++){

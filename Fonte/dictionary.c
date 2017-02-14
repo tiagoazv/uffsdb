@@ -124,7 +124,7 @@ int verificaNomeTabela(char *nomeTabela) {
             return 1;
         }
 
-        fseek(dicionario, 28, 1);
+        fseek(dicionario, 72, 1);
     }
 
     fclose(dicionario);
@@ -150,7 +150,7 @@ int quantidadeTabelas(){
 
         codTbl++; // Conta quantas vezes é lido uma tupla no dicionario.
 
-        fseek(dicionario, 48, 1);
+        fseek(dicionario, 92, 1);
     }
 
     fclose(dicionario);
@@ -247,78 +247,7 @@ tp_table *procuraAtributoFK(struct fs_objects objeto){
 
     return vetEsqm;
 }
-/* ----------------------------------------------------------------------------------------------
-    Objetivo:   Copia todas as informações menos a tabela com nome NomeTabela, que será removida.
-    Parametros: Nome da tabela que será removida do object.dat.
-    Retorno:    INT
-                SUCCESS,
-                ERRO_ABRIR_ARQUIVO
-   ---------------------------------------------------------------------------------------------*/
 
-int procuraObjectArquivo(char *nomeTabela){
-    int teste        = 0,
-        cont         = 0,
-        achou        = 0,
-        tamanhoTotal = sizeof(struct fs_objects);
-
-    char *table = (char *)malloc(sizeof(char) * tamanhoTotal);
-    FILE *dicionario, *fp;
-
-    char directory[LEN_DB_NAME_IO];
-    strcpy(directory, connected.db_directory);
-    strcat(directory, "fs_object.dat");
-
-    if((dicionario = fopen(directory,"a+b")) == NULL) {
-        free(table);
-        return ERRO_ABRIR_ARQUIVO;
-    }
-
-    strcpy(directory, connected.db_directory);
-    strcat(directory, "fs_nobject.dat");
-
-    if((fp = fopen(directory, "a+b")) == NULL) {
-        free(table);
-        return ERRO_ABRIR_ARQUIVO;
-    }
-
-    fseek(dicionario, 0, SEEK_SET);
-    fseek(fp, 0, SEEK_SET);
-
-    while(cont < quantidadeTabelas()){
-        fread(table, sizeof(char), tamanhoTotal, dicionario);
-        teste = TrocaArquivosObj(nomeTabela, table);
-
-        if(teste == 0){                                         //NÃO É IGUAL
-            fseek(fp, 0, SEEK_END);
-            fwrite(table, sizeof(char), tamanhoTotal, fp);
-        } else if(achou != 1){                                    //É IGUAL E NÃO TINHA SIDO DESCOBERTO.
-            achou = 1;
-            fread(table, sizeof(char), 0, dicionario);
-        }
-        cont++;
-    }
-
-    fclose(fp);
-    fclose(dicionario);
-
-    char directoryex[LEN_DB_NAME_IO*2];
-    strcpy(directoryex, connected.db_directory);
-    strcat(directoryex, "fs_object.dat");
-
-    remove(directoryex);
-
-    strcpy(directoryex, "mv ");
-    strcat(directoryex, connected.db_directory);
-    strcat(directoryex, "fs_nobject.dat ");
-    strcat(directoryex, connected.db_directory);
-    strcat(directoryex, "fs_object.dat");
-
-    system(directoryex);
-
-    free(table);
-    return SUCCESS;
-}
-//
 struct fs_objects leObjeto(char *nTabela){
 
     FILE *dicionario;
@@ -366,12 +295,10 @@ struct fs_objects leObjeto(char *nTabela){
             objeto.qtdCampos = cod;
 			fread(&i,sizeof(int),1,dicionario);
 			objeto.qtdIndice = i;
-			printf("%d\n", i);
 			objeto.nIndice = (char **) malloc(i * sizeof(char*));
 			while(i) {
 				objeto.nIndice[cont] = (char *) malloc(TAMANHO_NOME_INDICE * sizeof(char));
 				fread(objeto.nIndice[cont], TAMANHO_NOME_INDICE, 1, dicionario);
-				printf("%s\n", objeto.nIndice[cont]);
 				i--;
 				cont++;
 			}
@@ -380,7 +307,7 @@ struct fs_objects leObjeto(char *nTabela){
             fclose(dicionario);
             return objeto;
         }
-        fseek(dicionario, 28 + (objeto.qtdIndice * TAMANHO_NOME_INDICE), 1); // Pula a quantidade de caracteres para a proxima verificacao(4B do codigo, 20B do nome do arquivo e 4B da quantidade de campos).
+        fseek(dicionario, 72, 1); // Pula a quantidade de caracteres para a proxima verificacao(4B do codigo, 20B do nome do arquivo e 4B da quantidade de campos).
     }
     free(tupla);
     fclose(dicionario);
@@ -454,7 +381,83 @@ tp_table *leSchema (struct fs_objects objeto){
     fclose(schema);
     return esquema;
 }
-////
+/* ----------------------------------------------------------------------------------------------
+    Objetivo:   Copia todas as informações menos a tabela com nome NomeTabela, que será removida.
+    Parametros: Nome da tabela que será removida do object.dat.
+    Retorno:    INT
+                SUCCESS,
+                ERRO_ABRIR_ARQUIVO
+   ---------------------------------------------------------------------------------------------*/
+
+int procuraObjectArquivo(char *nomeTabela){
+
+    //tratar quanto o qtdIndice for 0
+    struct fs_objects getIndexInfo = leObjeto(nomeTabela);
+    if(getIndexInfo.qtdIndice == 0) getIndexInfo.qtdIndice = 1;
+
+    int teste        = 0,
+        cont         = 0,
+        achou        = 0,
+        tamanhoTotal = (52 + (TAMANHO_NOME_INDICE * getIndexInfo.qtdIndice));
+
+    char *table = (char *)malloc(sizeof(char) * tamanhoTotal);
+    FILE *dicionario, *fp;
+
+    char directory[LEN_DB_NAME_IO];
+    strcpy(directory, connected.db_directory);
+    strcat(directory, "fs_object.dat");
+
+    if((dicionario = fopen(directory,"a+b")) == NULL) {
+        free(table);
+        return ERRO_ABRIR_ARQUIVO;
+    }
+
+    strcpy(directory, connected.db_directory);
+    strcat(directory, "fs_nobject.dat");
+
+    if((fp = fopen(directory, "a+b")) == NULL) {
+        free(table);
+        return ERRO_ABRIR_ARQUIVO;
+    }
+
+    fseek(dicionario, 0, SEEK_SET);
+    fseek(fp, 0, SEEK_SET);
+
+    while(cont < quantidadeTabelas()){
+        fread(table, sizeof(char), tamanhoTotal, dicionario);
+        teste = TrocaArquivosObj(nomeTabela, table);
+
+        if(teste == 0){                                         //NÃO É IGUAL
+            fseek(fp, 0, SEEK_END);
+            fwrite(table, sizeof(char), tamanhoTotal, fp);
+        } else if(achou != 1){                                    //É IGUAL E NÃO TINHA SIDO DESCOBERTO.
+            achou = 1;
+            fread(table, sizeof(char), 0, dicionario);
+        }
+        cont++;
+    }
+
+    fclose(fp);
+    fclose(dicionario);
+
+    char directoryex[LEN_DB_NAME_IO*2];
+    strcpy(directoryex, connected.db_directory);
+    strcat(directoryex, "fs_object.dat");
+
+    remove(directoryex);
+
+    strcpy(directoryex, "mv ");
+    strcat(directoryex, connected.db_directory);
+    strcat(directoryex, "fs_nobject.dat ");
+    strcat(directoryex, connected.db_directory);
+    strcat(directoryex, "fs_object.dat");
+
+    system(directoryex);
+
+    free(table);
+    return SUCCESS;
+}
+//
 int tamTupla(tp_table *esquema, struct fs_objects objeto) {// Retorna o tamanho total da tupla da tabela.
 
     int qtdCampos = objeto.qtdCampos, i, tamanhoGeral = 0;
@@ -547,7 +550,7 @@ int finalizaTabela(table *t){
     tp_table *aux;
     int qtdIndice = 0;
     int codTbl = quantidadeTabelas() + 1, qtdCampos = 0; // Conta a quantidade de tabelas já no dicionario e soma 1 no codigo dessa nova tabela.
-    char *indiceDir = NULL;
+    char *indiceDir = (char *) calloc(TAMANHO_NOME_INDICE, sizeof(char));
     char nomeArquivo[TAMANHO_NOME_ARQUIVO];
     memset(nomeArquivo, 0, TAMANHO_NOME_ARQUIVO);
 
@@ -567,9 +570,8 @@ int finalizaTabela(table *t){
         fwrite(&aux->chave     ,sizeof(aux->chave)     ,1,esquema);  //Chave do campo
         fwrite(&aux->tabelaApt ,sizeof(aux->tabelaApt) ,1,esquema);  //Tabela Apontada
         fwrite(&aux->attApt    ,sizeof(aux->attApt)    ,1,esquema);  //Atributo apontado.
-	
+
 		if(aux->chave == PK && !qtdIndice) {
-			indiceDir = (char *) calloc(TAMANHO_NOME_INDICE, sizeof(char));
 			strcpy(indiceDir, connected.db_directory);
 			strcat(indiceDir, t->nome);
 			strcat(indiceDir, aux->nome);
@@ -739,7 +741,7 @@ void printTable(char *tbl){
 			fseek(dicionario, -1, 1);
 			fread(tupla, sizeof(char), TAMANHO_NOME_TABELA, dicionario);
 			printf(" %-10s | %-15s | %-10s | %-10s \n", "public", tupla, "tuple", connected.db_name);
-			fseek(dicionario, TAMANHO_NOME_INDICE + 4 + 28, 1);
+			fseek(dicionario, 72, 1);
 			i++;
 		}
 		fclose(dicionario);
