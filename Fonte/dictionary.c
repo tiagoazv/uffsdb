@@ -124,7 +124,7 @@ int verificaNomeTabela(char *nomeTabela) {
             return 1;
         }
 
-        fseek(dicionario, 72, 1);
+        fseek(dicionario, 32, 1);
     }
 
     fclose(dicionario);
@@ -150,7 +150,7 @@ int quantidadeTabelas(){
 
         codTbl++; // Conta quantas vezes é lido uma tupla no dicionario.
 
-        fseek(dicionario, 92, 1);
+        fseek(dicionario, 52, 1);
     }
 
     fclose(dicionario);
@@ -254,7 +254,7 @@ struct fs_objects leObjeto(char *nTabela){
     char *tupla = (char *)malloc(sizeof(char)*TAMANHO_NOME_TABELA);
     memset(tupla, '\0', TAMANHO_NOME_TABELA);
     int cod;
-    int i = 0, cont = 0;
+    int i = 0;
 
     char directory[LEN_DB_NAME_IO];
     strcpy(directory, connected.db_directory);
@@ -293,21 +293,14 @@ struct fs_objects leObjeto(char *nTabela){
             strcpylower(objeto.nArquivo, tupla);
             fread(&cod,sizeof(int),1,dicionario);
             objeto.qtdCampos = cod;
-			fread(&i,sizeof(int),1,dicionario);
-			objeto.qtdIndice = i;
-			objeto.nIndice = (char **) malloc(i * sizeof(char*));
-			while(i) {
-				objeto.nIndice[cont] = (char *) malloc(TAMANHO_NOME_INDICE * sizeof(char));
-				fread(objeto.nIndice[cont], TAMANHO_NOME_INDICE, 1, dicionario);
-				i--;
-				cont++;
-			}
+      			fread(&i,sizeof(int),1,dicionario);
+      			objeto.qtdIndice = i;
 
             free(tupla);
             fclose(dicionario);
             return objeto;
         }
-        fseek(dicionario, 72, 1); // Pula a quantidade de caracteres para a proxima verificacao(4B do codigo, 20B do nome do arquivo e 4B da quantidade de campos).
+        fseek(dicionario, 32, 1); // Pula a quantidade de caracteres para a proxima verificacao(4B do codigo, 20B do nome do arquivo e 4B da quantidade de campos).
     }
     free(tupla);
     fclose(dicionario);
@@ -391,14 +384,10 @@ tp_table *leSchema (struct fs_objects objeto){
 
 int procuraObjectArquivo(char *nomeTabela){
 
-    //tratar quanto o qtdIndice for 0
-    struct fs_objects getIndexInfo = leObjeto(nomeTabela);
-    if(getIndexInfo.qtdIndice == 0) getIndexInfo.qtdIndice = 1;
-
     int teste        = 0,
         cont         = 0,
         achou        = 0,
-        tamanhoTotal = (52 + (TAMANHO_NOME_INDICE * getIndexInfo.qtdIndice));
+        tamanhoTotal = 52;
 
     char *table = (char *)malloc(sizeof(char) * tamanhoTotal);
     FILE *dicionario, *fp;
@@ -550,7 +539,6 @@ int finalizaTabela(table *t){
     tp_table *aux;
     int qtdIndice = 0;
     int codTbl = quantidadeTabelas() + 1, qtdCampos = 0; // Conta a quantidade de tabelas já no dicionario e soma 1 no codigo dessa nova tabela.
-    char *indiceDir = (char *) calloc(TAMANHO_NOME_INDICE, sizeof(char));
     char nomeArquivo[TAMANHO_NOME_ARQUIVO];
     memset(nomeArquivo, 0, TAMANHO_NOME_ARQUIVO);
 
@@ -571,13 +559,9 @@ int finalizaTabela(table *t){
         fwrite(&aux->tabelaApt ,sizeof(aux->tabelaApt) ,1,esquema);  //Tabela Apontada
         fwrite(&aux->attApt    ,sizeof(aux->attApt)    ,1,esquema);  //Atributo apontado.
 
-		if(aux->chave == PK && !qtdIndice) {
-			strcpy(indiceDir, connected.db_directory);
-			strcat(indiceDir, t->nome);
-			strcat(indiceDir, aux->nome);
-			strcat(indiceDir, ".dat\0");
-			qtdIndice++;
-		}
+    		if(aux->chave == PK && !qtdIndice) {
+    			qtdIndice++;
+    		}
 
         qtdCampos++; // Soma quantidade total de campos inseridos.
     }
@@ -599,10 +583,8 @@ int finalizaTabela(table *t){
     fwrite(&nomeArquivo,sizeof(nomeArquivo),1,dicionario);
     fwrite(&qtdCampos,sizeof(qtdCampos),1,dicionario);
     fwrite(&qtdIndice,sizeof(int),1,dicionario);
-    fwrite(indiceDir,TAMANHO_NOME_INDICE,1,dicionario);
 
     fclose(dicionario);
-    if(indiceDir != NULL) free(indiceDir);
     return SUCCESS;
 }
 ////
@@ -741,7 +723,7 @@ void printTable(char *tbl){
 			fseek(dicionario, -1, 1);
 			fread(tupla, sizeof(char), TAMANHO_NOME_TABELA, dicionario);
 			printf(" %-10s | %-15s | %-10s | %-10s \n", "public", tupla, "tuple", connected.db_name);
-			fseek(dicionario, 72, 1);
+			fseek(dicionario, 32, 1);
 			i++;
 		}
 		fclose(dicionario);

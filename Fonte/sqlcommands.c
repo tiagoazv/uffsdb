@@ -975,7 +975,7 @@ int excluirTabela(char *nomeTabela) {
         //coloca o nome de todas as tabelas em tupla
         fread(tupla[k], sizeof(char), TAMANHO_NOME_TABELA , dicionario);
         k++;
-        fseek(dicionario, 72, 1);
+        fseek(dicionario, 32, 1);
     }
     fclose(dicionario);
     for(i = 0; i < objeto.qtdCampos; i++){
