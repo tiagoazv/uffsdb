@@ -419,6 +419,16 @@ int finalizaInsert(char *nome, column *c){
             free(nomeAtrib);
             flag = 1;
         }
+        
+		if (auxT[t].chave == BT) {
+			char * nomeAtrib2;
+      		nomeAtrib2 = (char*)malloc((strlen(nome)+strlen(auxC->nomeCampo) + strlen(connected.db_directory))* sizeof(char));
+      		strcpy(nomeAtrib2, connected.db_directory);
+      		strcat(nomeAtrib2, nome);
+      		strcat(nomeAtrib2,auxC->nomeCampo);
+            insere_indice(raiz, auxC->valorCampo, nomeAtrib2, offset);
+            free(nomeAtrib2);
+        }
 
         if (auxT[t].tipo == 'S'){ // Grava um dado do tipo string.
           if (sizeof(auxC->valorCampo) > auxT[t].tam && sizeof(auxC->valorCampo) != 8){
