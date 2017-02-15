@@ -776,7 +776,7 @@ void printTable(char *tbl){
 		}
 
     for(i=0; i<objeto1.qtdIndice; i++) {
-      btIndex[i] = (char*)realloc(btIndex[i], TAMANHO_NOME_CAMPO*sizeof(char));
+      btIndex[i] = (char*)malloc (TAMANHO_NOME_CAMPO*sizeof(char));
     }
 
 		for(l=0; l<objeto1.qtdCampos; l++) {
@@ -826,9 +826,11 @@ void printTable(char *tbl){
 				printf("\t\"%s_%s_fkey\" FOREIGN KEY (%s) REFERENCES %s(%s)\n",tbl, refColumn[l], refColumn[l], fkTable[l], fkColumn[l]);
 			}
 		}
-
+		
+		for(i=0; i < objeto1.qtdIndice; i++)	free(btIndex[i]);
+		
 		free(pk);
-    free(btIndex);
+		free(btIndex);
 		free(fkTable);
 		free(fkColumn);
 		free(refColumn);
@@ -862,6 +864,7 @@ void incrementaQtdIndice(char *nTabela){
           fseek(dicionario,sizeof(int),SEEK_CUR);
           offset = ftell(dicionario);
           fread(&qt, sizeof(int), 1, dicionario);
+          qt++;
           fseek(dicionario,offset,SEEK_SET);
           fwrite(&qt,sizeof(int),1,dicionario);
           fclose(dicionario);
