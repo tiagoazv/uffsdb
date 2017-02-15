@@ -49,7 +49,7 @@ int yywrap() {
         LIST_TABLES LIST_TABLE  CONNECT     HELP        LIST_DBASES
         CLEAR       CONTR       WHERE       OPERADOR    RELACIONAL
         LOGICO      ASTERISCO   SINAL       FECHA_P     ABRE_P
-        STRING      UNIQUE      INDEX      ON;
+        STRING      INDEX       ON;
 %%
 start: insert | select | create_table | create_database | drop_table | drop_database
      | table_attr | list_tables | connection | exit_program | semicolon {GLOBAL_PARSER.consoleFlag = 1; return 0;}
@@ -214,7 +214,7 @@ operando: sinal VALUE {adcTokenWhere(yylval.strval,9);} | sinal NUMBER {adcToken
         | VALUE {adcTokenWhere(yylval.strval,9);} | NUMBER {adcTokenWhere(yylval.strval,9);}
 
 /* CREATE TABLE */
-create_index: CREATE UNIQUE INDEX ON {setMode(OP_CREATE_INDEX);} table parentesis_open atributo parentesis_close semicolon {
+create_index: CREATE INDEX ON {setMode(OP_CREATE_INDEX);} table parentesis_open atributo parentesis_close semicolon {
     return 0;
 };
 

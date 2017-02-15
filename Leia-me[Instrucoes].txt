@@ -362,3 +362,21 @@ Alunos: Jefferson Coppini, Jonathan Rauber, Nicholas Brutti, Ricardo Müller
 =============================================================================================================================================
 
 Foi implementada a verificação de índices PK e FK utilizando árvore B+.
+Adicionado comando explícito CREATE INDEX:
+
+	CREATE INDEX ON tabela (atributo);
+
+Além da implementação do comando CREATE INDEX, os comandos DROP TABLE, CREATE TABLE e INSERT tiveram que ser alterados para
+suporte ao índice B+ implementado.
+	Updates:
+	->	DROP TABLE: quando uma tabela é deletada todos os índices B+ associados à ela são removidos também.
+	->	CREATE TABLE: quando uma tabela é criada e ela possui um atributo com chave primária, é construído automaticamente um índice B+ para a PK.
+	->	INSERT: verifica chave primária através do índice B+. Também verifica com o índice B+ as chaves estrangeiras, caso o atributo apontado em outra tabela
+							possui índice associado.
+
+A ordem da árvore B+ é dinâmica (o cálculo depende do número de tuplas armazenados na tabela). A árvore possuirá no máximo 5 níveis.
+
+Como é armazenado o índice B+:
+	Ex.: Cria-se uma tabela ALUNO com o atributo Matricula como chave primária. É gerado o arquivo de índices denso no mesmo diretório
+	da tabela com o nome de arquivo 'alunomatricula.dat'.
+	

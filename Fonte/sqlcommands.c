@@ -419,7 +419,7 @@ int finalizaInsert(char *nome, column *c){
             free(nomeAtrib);
             flag = 1;
         }
-        
+
 		if (auxT[t].chave == BT) {
 			char * nomeAtrib2;
       		nomeAtrib2 = (char*)malloc((strlen(nome)+strlen(auxC->nomeCampo) + strlen(connected.db_directory))* sizeof(char));
@@ -428,9 +428,8 @@ int finalizaInsert(char *nome, column *c){
       		strcat(nomeAtrib2,auxC->nomeCampo);
       		nodo * raiz2 = NULL;
       		raiz2 = constroi_bplus(nomeAtrib2);
-      		printf("%s\n",nomeAtrib2);
-            insere_indice(raiz2, auxC->valorCampo, nomeAtrib2, offset);
-            free(nomeAtrib2);
+          insere_indice(raiz2, auxC->valorCampo, nomeAtrib2, offset);
+          free(nomeAtrib2);
         }
 
         if (auxT[t].tipo == 'S'){ // Grava um dado do tipo string.
