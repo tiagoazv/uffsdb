@@ -310,7 +310,6 @@ void insere_arquivo(nodo* inicio, char* nomeTabela){
 //insere o indice e o endereço no arquivo de indices
 void insere_indice(nodo* raiz, char* ind, char* nomeTabela, long int end){
 	nodo * aux;
-	printf("sahushuauhsa\n\n");
 	aux = busca_insere(raiz,ind,end); // retorna inicio da lista dos folhas
 	if(aux == NULL){
 		 aux = criaNodo();//arvore vazia
