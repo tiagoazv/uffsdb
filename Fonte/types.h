@@ -9,7 +9,7 @@ struct fs_objects { // Estrutura usada para carregar fs_objects.dat
     int cod;                             // Código da tabela.
     char nArquivo[TAMANHO_NOME_ARQUIVO]; // Nome do arquivo onde estão armazenados os dados da tabela.
     int qtdCampos;                       // Quantidade de campos da tabela.
-    int qtdIndice;						 // Quantidade de índices da tabela.
+    int qtdIndice;						           // Quantidade de índices da tabela.
     char **nIndice;                      // Diretório do arquivo de índices da tabela.
 };
 

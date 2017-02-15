@@ -1155,4 +1155,49 @@ void createTable(rc_insert *t) {
   free(tableName);
   if(tab != NULL) freeTable(tab);
 }
+
+void createIndex(rc_insert *t) {
+  struct fs_objects obj;
+  struct tp_table   *tb;
+  char *dir = (char *) malloc(strlen(connected.db_directory) + strlen(t->objName) + strlen(t->columnName[0]));
+  int flag = 0;
+
+  if (!verificaNomeTabela(t->objName)) {
+    printf("ERROR: table \"%s\" does not exist.\n", t->objName);
+    return;
+  }
+
+  obj = leObjeto(t->objName);
+  tb  = leSchema(obj);
+
+  if(tb->chave == PK) {// Atributo PK, logo já possui índice criado automaticamente
+    printf("\n"); // Exibir mensagem de erro.
+    return;
+  }
+
+  for(tp_table *aux = tb; aux != NULL && !flag; aux = aux->next)
+    if(strcmp(aux->nome, t->columnName[0]) == 0) flag = 1;
+
+  if (!flag) {
+    printf("ERROR: attribute \"%s\" does not exist on table %s.\n", t->columnName[0], t->objName);
+    return;
+  }
+
+  strcpy(dir, connected.db_directory);
+  strcat(dir, t->objName);
+  strcat(dir, t->columnName[0]);
+
+  flag = 0;
+  for(int i = 0; i < obj.qtdIndice && !flag; i++)
+    if(strcmp(dir, obj.nIndice[i]) == 0) flag = 1;
+
+  if(flag) {
+    printf("arquivo de índice já existe!\n");
+    return -1;
+  }
+
+  inicializa_indice(dir);
+  free(dir);
+}
+
 ///////

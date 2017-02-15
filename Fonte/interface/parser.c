@@ -256,10 +256,6 @@ void setMode(char mode) {
     GLOBAL_PARSER.step++;
 }
 
-void createIndex(rc_insert *t) {
-  printf("TESTANDO LEX/YACC\n");
-}
-
 int interface() {
     pthread_t pth;
 
