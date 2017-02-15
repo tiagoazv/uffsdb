@@ -379,4 +379,6 @@ A ordem da árvore B+ é dinâmica (o cálculo depende do número de tuplas arma
 Como é armazenado o índice B+:
 	Ex.: Cria-se uma tabela ALUNO com o atributo Matricula como chave primária. É gerado o arquivo de índices denso no mesmo diretório
 	da tabela com o nome de arquivo 'alunomatricula.dat'.
-	
+
+	Cada chave no arquivo de índice é gravada da seguinte forma:
+		valor (string alocada dinamicamente) 

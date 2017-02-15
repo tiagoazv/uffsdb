@@ -422,6 +422,7 @@ int finalizaInsert(char *nome, column *c){
 
 		if (auxT[t].chave == BT) {
 			char * nomeAtrib2;
+          ntuplas = ntuplas-1;
       		nomeAtrib2 = (char*)malloc((strlen(nome)+strlen(auxC->nomeCampo) + strlen(connected.db_directory))* sizeof(char));
       		strcpy(nomeAtrib2, connected.db_directory);
       		strcat(nomeAtrib2, nome);

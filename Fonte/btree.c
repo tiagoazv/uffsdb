@@ -187,7 +187,7 @@ nodo* constroi_bplus(char* nomeTabela){
 	fseek(new,0,SEEK_END);
 	fread(&ntuplas, sizeof(int),1,new);
 	ordem = calculaOrdem(ntuplas);
-	
+
 	fseek(new,0,SEEK_SET);
 
 	while(1){
@@ -302,7 +302,7 @@ void insere_arquivo(nodo* inicio, char* nomeTabela){
 	}
 	char2 = '&';
 	fwrite(&char2,sizeof(char),1,new);
-	ntuplas++; 
+	ntuplas++;
 	fwrite(&ntuplas,sizeof(int),1,new);
 	fclose(new);
 }
