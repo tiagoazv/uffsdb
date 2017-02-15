@@ -937,7 +937,7 @@ int excluirTabela(char *nomeTabela) {
     int x,erro, i, j, k, l, qtTable;
 	  char str[20];
     char dat[5] = ".dat";
-
+    FILE *f = NULL;
     memset(str, '\0', 20);
 
     if (!verificaNomeTabela(nomeTabela)) {
@@ -1008,8 +1008,9 @@ int excluirTabela(char *nomeTabela) {
         strcat(directory, nomeTabela);
         strcat(directory, tab2[i].nome);
         strcat(directory, dat);
-        if (fopen(directory,"r") != NULL){
+        if ((f = fopen(directory,"r")) != NULL){
     			remove(directory);
+          fclose(f);
     		}
         objeto.qtdIndice--;
       }
@@ -1139,8 +1140,9 @@ void createTable(rc_insert *t) {
 void createIndex(rc_insert *t) {
   struct fs_objects obj;
   struct tp_table   *tb;
-  char *dir = (char *) malloc(strlen(connected.db_directory) + strlen(t->objName) + strlen(t->columnName[0]));
+  char *dir = (char *) malloc(strlen(connected.db_directory) + strlen(t->objName) + strlen(t->columnName[0]) + strlen(".dat"));
   int flag = 0;
+  FILE *f = NULL;
 
   if (!verificaNomeTabela(t->objName)) {
     printf("ERROR: table \"%s\" does not exist.\n", t->objName);
@@ -1150,13 +1152,15 @@ void createIndex(rc_insert *t) {
   obj = leObjeto(t->objName);
   tb  = leSchema(obj);
 
-  if(tb->chave == PK) {// Atributo PK, logo já possui índice criado automaticamente
-    printf("\n"); // Exibir mensagem de erro.
-    return;
+  for(tp_table *aux = tb; aux != NULL && !flag; aux = aux->next) {
+    if(strcmp(aux->nome, t->columnName[0]) == 0) { //Procura o atributo na tabela
+      if(aux->chave == PK) {// Se o atributo é PK já possui índice criado automaticamente
+        printf("ERROR: attribute \"%s\" already has a b+ index.\n", t->columnName[0]);
+        return;
+      }
+      flag = 1;
+    }
   }
-
-  for(tp_table *aux = tb; aux != NULL && !flag; aux = aux->next)
-    if(strcmp(aux->nome, t->columnName[0]) == 0) flag = 1;
 
   if (!flag) {
     printf("ERROR: attribute \"%s\" does not exist on table %s.\n", t->columnName[0], t->objName);
@@ -1166,17 +1170,19 @@ void createIndex(rc_insert *t) {
   strcpy(dir, connected.db_directory);
   strcat(dir, t->objName);
   strcat(dir, t->columnName[0]);
+  strcat(dir, ".dat");
 
-  flag = 0;
-  for(int i = 0; i < obj.qtdIndice && !flag; i++)
-    if(strcmp(dir, obj.nIndice[i]) == 0) flag = 1;
-
-  if(flag) {
-    printf("arquivo de índice já existe!\n");
-    return -1;
+  if ((f = fopen(dir,"r")) != NULL){
+    printf("ERROR: B+ index file already exists.\n");
+    return;
   }
 
+  strcpy(dir, connected.db_directory);
+  strcat(dir, t->objName);
+  strcat(dir, t->columnName[0]);
+
   inicializa_indice(dir);
+  //incrementar qtdIndice no fs_object e adicionar chave = BT no schema
   free(dir);
 }
 
