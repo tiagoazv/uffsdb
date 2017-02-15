@@ -842,30 +842,28 @@ void incrementaQtdIndice(char *nTabela){
   FILE *dicionario = NULL;
   char tupla[TAMANHO_NOME_TABELA];
   memset(tupla, '\0', TAMANHO_NOME_TABELA);
-  int qt = 0;
+  int qt = 0, offset = 0;
 
   char directory[LEN_DB_NAME_IO];
   strcpy(directory, connected.db_directory);
   strcat(directory, "fs_object.dat");
 
-  if((dicionario = fopen(directory,"a+b")) == NULL){
+  if((dicionario = fopen(directory,"r+b")) == NULL){
     printf("Erro ao abrir dicionário de dados.\n");
     return;
   }
-
-  printf("OLA\n");
+  
   while(fgetc (dicionario) != EOF){
       fseek(dicionario, -1, 1);
 
       fread(tupla, sizeof(char), TAMANHO_NOME_TABELA , dicionario); //Lê somente o nome da tabela
-      printf("%s\n", tupla);
       if(strcmp(tupla, nTabela) == 0){
           fseek(dicionario,sizeof(int),SEEK_CUR);
           fseek(dicionario,sizeof(char)*TAMANHO_NOME_ARQUIVO,SEEK_CUR);
           fseek(dicionario,sizeof(int),SEEK_CUR);
+          offset = ftell(dicionario);
           fread(&qt, sizeof(int), 1, dicionario);
-          fseek(dicionario,-sizeof(int),SEEK_CUR);
-          qt = qt + 1;
+          fseek(dicionario,offset,SEEK_SET);
           fwrite(&qt,sizeof(int),1,dicionario);
           fclose(dicionario);
           return;

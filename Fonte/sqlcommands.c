@@ -1140,7 +1140,7 @@ void createTable(rc_insert *t) {
 void createIndex(rc_insert *t) {
   struct fs_objects obj;
   struct tp_table   *tb;
-  char *dir = (char *) malloc(strlen(connected.db_directory) + strlen(t->objName) + strlen(t->columnName[0]) + strlen(".dat"));
+  char dir[TAMANHO_NOME_TABELA + TAMANHO_NOME_ARQUIVO + TAMANHO_NOME_CAMPO + TAMANHO_NOME_INDICE];
   int flag = 0;
   FILE *f = NULL;
 
@@ -1184,7 +1184,6 @@ void createIndex(rc_insert *t) {
   inicializa_indice(dir);
   incrementaQtdIndice(t->objName);
   //adicionar chave = BT no schema
-  free(dir);
 }
 
 ///////
