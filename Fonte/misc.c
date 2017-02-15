@@ -133,6 +133,7 @@ void help() {
 	printf("\t\t\t\t\t\t  corresponder à quantidade de colunas da tabela.\n");
 	printf("\nSELECT * FROM NOME;\t\t\t\t- Não é a implementação padrão do SELECT mas serve para\n");
 	printf("\t\t\t\t\t\t  imprmir todos os valores de uma tabela\n");
+  printf("\nCREATE INDEX ON tabela (atributo);\t\t- Cria um índice B+ para o atributo especificado.\n");
 }
 ////
 int objcmp(char *obj, char *str) {
