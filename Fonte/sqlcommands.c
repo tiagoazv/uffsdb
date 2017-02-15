@@ -426,7 +426,10 @@ int finalizaInsert(char *nome, column *c){
       		strcpy(nomeAtrib2, connected.db_directory);
       		strcat(nomeAtrib2, nome);
       		strcat(nomeAtrib2,auxC->nomeCampo);
-            insere_indice(raiz, auxC->valorCampo, nomeAtrib2, offset);
+      		nodo * raiz2 = NULL;
+      		raiz2 = constroi_bplus(nomeAtrib2);
+      		printf("%s\n",nomeAtrib2);
+            insere_indice(raiz2, auxC->valorCampo, nomeAtrib2, offset);
             free(nomeAtrib2);
         }
 
@@ -512,10 +515,10 @@ int finalizaInsert(char *nome, column *c){
 
     }
   fclose(dados);
-  free(tab); // Libera a memoria da estrutura.
-  free(tab2); // Libera a memoria da estrutura.
-  free(auxT); // Libera a memoria da estrutura.
-  free(temp); // Libera a memoria da estrutura.
+	free(tab); // Libera a memoria da estrutura.
+	free(tab2); // Libera a memoria da estrutura.
+	free(auxT); // Libera a memoria da estrutura.
+	free(temp); // Libera a memoria da estrutura.
   return SUCCESS;
 }
 
