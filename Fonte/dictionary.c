@@ -753,7 +753,7 @@ void printTable(char *tbl){
 		char **fkTable		= (char**)malloc(objeto1.qtdCampos*sizeof(char**));
 		char **fkColumn 	= (char**)malloc(objeto1.qtdCampos*sizeof(char**));
 		char **refColumn 	= (char**)malloc(objeto1.qtdCampos*sizeof(char**));
-    char **btIndex		= (char**)malloc(objeto1.qtdIndice*sizeof(char**));
+    char **btIndex		= (char**)malloc(objeto1.qtdIndice*sizeof(char*));
 
 		memset(pk 		, 0, objeto1.qtdCampos);
 		memset(fkTable 	, 0, objeto1.qtdCampos);
@@ -776,7 +776,7 @@ void printTable(char *tbl){
 		}
 
     for(i=0; i<objeto1.qtdIndice; i++) {
-      btIndex[i] = (char*)malloc(TAMANHO_NOME_CAMPO*sizeof(char));
+      btIndex[i] = (char*)realloc(btIndex[i], TAMANHO_NOME_CAMPO*sizeof(char));
     }
 
 		for(l=0; l<objeto1.qtdCampos; l++) {
@@ -808,20 +808,18 @@ void printTable(char *tbl){
 
 			printf("\n");
 		}
+    if(ipk || ibt)
+      printf("Indexes:\n");
 		if(ipk){	//printf PK's
-			printf("Indexes:\n");
 			for(l = 0; l < ipk; l++){
 				printf("\t\"%s_pkey\" PRIMARY KEY (%s)\n", tbl, pk[l]);
 			}
-      if(ibt){
-        printf("B+ indexes on ");
-        for(l = 0; l < ibt; l++){
-          if(l>0) printf(", ");
-  				printf("%s", btIndex[l]);
-  			}
-        printf(".\n");
-      }
 		}
+    if(ibt){
+      for(l = 0; l < ibt; l++){
+        printf("\t\"%s\" BTREE INDEX\n", btIndex[l]);
+      }
+    }
 		if(ifk){	//printf FK's
 			printf("Foreign-key constrains:\n");
 			for(l = 0; l < ifk; l++){
@@ -830,6 +828,7 @@ void printTable(char *tbl){
 		}
 
 		free(pk);
+    free(btIndex);
 		free(fkTable);
 		free(fkColumn);
 		free(refColumn);
@@ -852,7 +851,7 @@ void incrementaQtdIndice(char *nTabela){
     printf("Erro ao abrir dicionário de dados.\n");
     return;
   }
-  
+
   while(fgetc (dicionario) != EOF){
       fseek(dicionario, -1, 1);
 
@@ -873,6 +872,52 @@ void incrementaQtdIndice(char *nTabela){
   printf("Erro ao atualizar dicionário de dados.\n");
 }
 
+
+void adicionaBT(char *nomeTabela, char *nomeAtrib) {
+  int cod;
+  char directory[LEN_DB_NAME_IO];
+  strcpy(directory, connected.db_directory);
+  strcat(directory, "fs_schema.dat");
+
+  char atrib[TAMANHO_NOME_CAMPO];
+  memset(atrib, '\0', TAMANHO_NOME_CAMPO);
+
+
+  FILE *schema = fopen(directory, "r+b"); // Abre o arquivo de esquemas de tabelas.
+
+  if (schema == NULL){
+      printf("Erro ao abrir esquema da tabela.\n");
+      return;
+  }
+  struct fs_objects objeto = leObjeto(nomeTabela);
+
+  while(fgetc (schema) != EOF){ // Varre o arquivo ate encontrar todos os campos com o codigo da tabela.
+      fseek(schema, -1, 1);
+
+      if(fread(&cod, sizeof(int), 1, schema)){ // Le o codigo da tabela.
+          if(cod == objeto.cod){ // Verifica se o campo a ser copiado e da tabela que esta na estrutura fs_objects.
+              fread(atrib, sizeof(char), TAMANHO_NOME_CAMPO, schema);
+              if(strcmp(atrib, nomeAtrib) == 0) {
+                //Pula até a posição de tp_table.chave (1B do tipo e 4B do tam)
+                fseek(schema, 5, SEEK_CUR);
+                int chave = BT;
+                fwrite(&chave,sizeof(int),1,schema);
+                fclose(schema);
+                return;
+              } else {
+                // pula 1B do tipo, 4B do tamanho,4B da chave, 20B do nome da Tabela Apontada e 40B do atributo apontado
+                fseek(schema, 69, SEEK_CUR);
+              }
+
+          }
+          else {
+              fseek(schema, 109, 1); // Pula a quantidade de caracteres para a proxima verificacao (40B do nome, 1B do tipo e 4B do tamanho,4B da chave, 20B do nome da Tabela Apontada e 40B do atributo apontado).
+          }
+      }
+  }
+
+  printf("Erro ao abrir o esquema da tabela \"%s\".\n", nomeTabela);
+}
 /* NÃO IMPLEMENTADO: a ideia era dar o free de maneira correta nas listas alocadas ao longo
  * da execução do programa, já que os grupos anteriores não se preocuparam com isso. No entanto,
  * não tivemos tempo ágil para implementar uma solução livre de erros e preferimos deixar

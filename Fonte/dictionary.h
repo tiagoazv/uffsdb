@@ -116,3 +116,5 @@ void freeTable(table *);
 void freeColumn(column *);
 
 void incrementaQtdIndice(char *nTabela);
+
+void adicionaBT(char *nomeTabela, char *nomeAtrib);

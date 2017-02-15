@@ -1183,7 +1183,8 @@ void createIndex(rc_insert *t) {
 
   inicializa_indice(dir);
   incrementaQtdIndice(t->objName);
-  //adicionar chave = BT no schema
+  adicionaBT(t->objName, t->columnName[0]);
+  printf("CREATE INDEX\n");
 }
 
 ///////
