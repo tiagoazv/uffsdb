@@ -935,44 +935,11 @@ int excluirTabela(char *nomeTabela) {
     struct fs_objects objeto, objeto1;
     tp_table *esquema, *esquema1;
     int x,erro, i, j, k, l, qtTable;
-    char *index_directory = NULL;
-	char *nome_index = NULL, *arquivo = NULL;
-	char *arquivo2 = NULL;
-	char str[20];
+	  char str[20];
     char dat[5] = ".dat";
-    struct fs_objects dicio;
-    tp_table *auxT ;
-    FILE * arq = NULL;
 
     memset(str, '\0', 20);
-    //Acha o caminho dos arquivos de indice
-    index_directory = (char *) malloc(sizeof(char) * (strlen(connected.db_directory)));
-    nome_index = (char *) malloc(sizeof(char) * (strlen(nomeTabela)));
-	strcpy(nome_index, nomeTabela); // Copia o nome da tabela
-	strcpy(index_directory, connected.db_directory); // Copia o diretório atual
-    strcpylower(nome_index, nome_index);       //muda pra minúsculo
-    arquivo = (char*)malloc(sizeof(char) * (strlen(nome_index) + strlen(index_directory)));
-    strcpy(arquivo,index_directory);
-    strcat(arquivo,nome_index);
-    auxT = abreTabela(nomeTabela, &dicio, &auxT);
 
-	//Concatena atributo para verificação do arquivo de indice
-    while (auxT!=NULL){
-		arquivo2 = (char*)malloc(sizeof(char) * (strlen(arquivo)+ strlen(auxT->nome) + strlen(dat)+1));
-		strcpy(arquivo2,arquivo);
-		strcat(arquivo2,auxT->nome);
-		strcat(arquivo2,dat);
-	//Se encontrar, remove o arquivo de indice
-		if ((arq = fopen(arquivo2,"r") )!= NULL){
-			fclose(arq);
-			remove(arquivo2);
-		}
-		free(arquivo2);
-		auxT = auxT->next;
-	}
-	free(nome_index);
-	free(index_directory);
-	free(arquivo);
     if (!verificaNomeTabela(nomeTabela)) {
         printf("ERROR: table \"%s\" does not exist.\n", nomeTabela);
         return ERRO_NOME_TABELA;
@@ -1033,6 +1000,19 @@ int excluirTabela(char *nomeTabela) {
                 }
             }
         }
+    }
+
+    for (i = 0; objeto.qtdIndice != 0; i++) {
+      if(tab2[i].chave == PK || tab2[i].chave == BT) {
+        strcpy(directory, connected.db_directory);
+        strcat(directory, nomeTabela);
+        strcat(directory, tab2[i].nome);
+        strcat(directory, dat);
+        if (fopen(directory,"r") != NULL){
+    			remove(directory);
+    		}
+        objeto.qtdIndice--;
+      }
     }
 
     free(tab2);
