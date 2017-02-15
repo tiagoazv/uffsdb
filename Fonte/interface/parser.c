@@ -159,6 +159,12 @@ void setColumnPKCreate() {
     GLOBAL_DATA.attribute[GLOBAL_PARSER.col_count-1] = PK;
 }
 
+void setColumnBtreeCreate(char **nome) {
+    GLOBAL_DATA.columnName = realloc(GLOBAL_DATA.columnName, (GLOBAL_PARSER.col_count+1)*sizeof(char*));
+    GLOBAL_DATA.columnName[GLOBAL_PARSER.col_count] = malloc(sizeof(char)*(strlen(*nome)+1));
+    strcpylower(GLOBAL_DATA.columnName[GLOBAL_PARSER.col_count], *nome);
+}
+
 void setColumnFKTableCreate(char **nome) {
     GLOBAL_DATA.fkTable[GLOBAL_PARSER.col_count-1] = realloc(GLOBAL_DATA.fkTable[GLOBAL_PARSER.col_count-1], sizeof(char)*(strlen(*nome)+1));
     strcpylower(GLOBAL_DATA.fkTable[GLOBAL_PARSER.col_count-1], *nome);
@@ -250,6 +256,10 @@ void setMode(char mode) {
     GLOBAL_PARSER.step++;
 }
 
+void createIndex(rc_insert *t) {
+  printf("TESTANDO LEX/YACC\n");
+}
+
 int interface() {
     pthread_t pth;
 
@@ -284,7 +294,7 @@ int interface() {
                         case OP_SELECT:
                             resultado = op_select(&SELECT);
                             if(resultado){
-                              printConsulta(SELECT.proj,resultado);                            
+                              printConsulta(SELECT.proj,resultado);
                               resultado = NULL;
                             }
                             break;
@@ -300,6 +310,9 @@ int interface() {
                         case OP_DROP_DATABASE:
                             dropDatabase(GLOBAL_DATA.objName);
                             break;
+                        case OP_CREATE_INDEX:
+                            createIndex(&GLOBAL_DATA);
+                            break;
                         default: break;
                     }
 
@@ -314,6 +327,7 @@ int interface() {
                 case OP_DROP_TABLE:
                 case OP_SELECT:
                 case OP_INSERT:
+                case OP_CREATE_INDEX:
                     if (GLOBAL_PARSER.step == 1) {
                         GLOBAL_PARSER.consoleFlag = 0;
                         printf("Expected object name.\n");

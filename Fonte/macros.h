@@ -33,6 +33,7 @@
 #define NPK 0
 #define PK 1
 #define FK 2
+#define BT 3
 ////
 #define SIZE 512                // Tamanho da página.
 #define PAGES 1024              // Número de páginas.

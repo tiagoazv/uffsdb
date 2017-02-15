@@ -11,6 +11,7 @@
 #define OP_CREATE_DATABASE 	4
 #define OP_DROP_DATABASE 	5
 #define OP_SELECT 		6
+#define OP_CREATE_INDEX 7
 
 /* Estrutura global que guarda as informações obtidas pelo yacc
  * na identificação dos tokens
@@ -102,6 +103,9 @@ void setColumnSizeCreate(char *size);
  * como PRIMARY KEY
  */
 void setColumnPKCreate();
+
+/* Define a coluna que receberá um novo indice B+. */
+void setColumnBtreeCreate(char **nome);
 
 /* Define a tabela que a coluna identificada no CREATE TABLE
  * irá referenciar

@@ -765,17 +765,19 @@ void printTable(char *tbl){
 
 		tp_table *tab3 = (tp_table *)malloc(sizeof(struct tp_table));
 		tab3 = procuraAtributoFK(objeto1); //retorna tp_table
-		int l, ipk=0, ifk=0;
+		int l, ipk=0, ifk=0, ibt=0;
 
 		char **pk 			= (char**)malloc(objeto1.qtdCampos*sizeof(char**));
 		char **fkTable		= (char**)malloc(objeto1.qtdCampos*sizeof(char**));
 		char **fkColumn 	= (char**)malloc(objeto1.qtdCampos*sizeof(char**));
 		char **refColumn 	= (char**)malloc(objeto1.qtdCampos*sizeof(char**));
+    char **btIndex		= (char**)malloc(objeto1.qtdIndice*sizeof(char**));
 
 		memset(pk 		, 0, objeto1.qtdCampos);
 		memset(fkTable 	, 0, objeto1.qtdCampos);
 		memset(fkColumn , 0, objeto1.qtdCampos);
 		memset(refColumn, 0, objeto1.qtdCampos);
+    memset(btIndex, 0, objeto1.qtdIndice);
 
 		int i;
 		for(i=0; i<objeto1.qtdCampos; i++) {
@@ -791,6 +793,10 @@ void printTable(char *tbl){
 
 		}
 
+    for(i=0; i<objeto1.qtdIndice; i++) {
+      btIndex[i] = (char*)malloc(TAMANHO_NOME_CAMPO*sizeof(char));
+    }
+
 		for(l=0; l<objeto1.qtdCampos; l++) {
 
 			if(tab3[l].chave == PK){
@@ -801,6 +807,9 @@ void printTable(char *tbl){
 				strcpylower(fkColumn[ifk]	, tab3[l].attApt);
 				strcpylower(refColumn[ifk++], tab3[l].nome);
 			}
+      else if(tab3[l].chave == BT){
+        strcpylower(btIndex[ibt++], tab3[l].nome);
+      }
 
 			printf("  %-17s |", tab3[l].nome);
 
@@ -822,6 +831,14 @@ void printTable(char *tbl){
 			for(l = 0; l < ipk; l++){
 				printf("\t\"%s_pkey\" PRIMARY KEY (%s)\n", tbl, pk[l]);
 			}
+      if(ibt){
+        printf("B+ indexes on ");
+        for(l = 0; l < ibt; l++){
+          if(l>0) printf(", ");
+  				printf("%s", btIndex[l]);
+  			}
+        printf(".\n");
+      }
 		}
 		if(ifk){	//printf FK's
 			printf("Foreign-key constrains:\n");
