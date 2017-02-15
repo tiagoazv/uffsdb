@@ -1182,7 +1182,8 @@ void createIndex(rc_insert *t) {
   strcat(dir, t->columnName[0]);
 
   inicializa_indice(dir);
-  //incrementar qtdIndice no fs_object e adicionar chave = BT no schema
+  incrementaQtdIndice(t->objName);
+  //adicionar chave = BT no schema
   free(dir);
 }
 

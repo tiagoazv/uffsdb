@@ -837,6 +837,44 @@ void printTable(char *tbl){
 		printf("\n");
 	}
 }
+
+void incrementaQtdIndice(char *nTabela){
+  FILE *dicionario = NULL;
+  char tupla[TAMANHO_NOME_TABELA];
+  memset(tupla, '\0', TAMANHO_NOME_TABELA);
+  int qt = 0;
+
+  char directory[LEN_DB_NAME_IO];
+  strcpy(directory, connected.db_directory);
+  strcat(directory, "fs_object.dat");
+
+  if((dicionario = fopen(directory,"a+b")) == NULL){
+    printf("Erro ao abrir dicionário de dados.\n");
+    return;
+  }
+
+  printf("OLA\n");
+  while(fgetc (dicionario) != EOF){
+      fseek(dicionario, -1, 1);
+
+      fread(tupla, sizeof(char), TAMANHO_NOME_TABELA , dicionario); //Lê somente o nome da tabela
+      printf("%s\n", tupla);
+      if(strcmp(tupla, nTabela) == 0){
+          fseek(dicionario,sizeof(int),SEEK_CUR);
+          fseek(dicionario,sizeof(char)*TAMANHO_NOME_ARQUIVO,SEEK_CUR);
+          fseek(dicionario,sizeof(int),SEEK_CUR);
+          fread(&qt, sizeof(int), 1, dicionario);
+          fseek(dicionario,-sizeof(int),SEEK_CUR);
+          qt = qt + 1;
+          fwrite(&qt,sizeof(int),1,dicionario);
+          fclose(dicionario);
+          return;
+      }
+      fseek(dicionario, 32, 1); // Pula a quantidade de caracteres para a proxima verificacao(4B do codigo, 20B do nome do arquivo e 4B da quantidade de campos).
+  }
+  printf("Erro ao atualizar dicionário de dados.\n");
+}
+
 /* NÃO IMPLEMENTADO: a ideia era dar o free de maneira correta nas listas alocadas ao longo
  * da execução do programa, já que os grupos anteriores não se preocuparam com isso. No entanto,
  * não tivemos tempo ágil para implementar uma solução livre de erros e preferimos deixar
