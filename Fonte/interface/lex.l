@@ -25,6 +25,8 @@
 (?i:WHERE)						return WHERE;
 (?i:CREATE)						return CREATE;
 (?i:TABLE)						return TABLE;
+(?i:ON)						    return ON;
+(?i:INDEX)						return INDEX;
 (?i:INTEGER)					return INTEGER;
 (?i:AND)					return LOGICO;
 (?i:OR)					return LOGICO;

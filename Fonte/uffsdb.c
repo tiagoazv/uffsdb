@@ -19,6 +19,9 @@
 #ifndef FDATABASE
    #include "database.h"
 #endif
+#ifndef FBTREE
+   #include "btree.h"
+#endif
 
 #include "interface/y.tab.h"
 
@@ -26,7 +29,7 @@ db_connected connected;
 
 int main(){
     dbInit(NULL);
-    printf("uffsdb (15.1).\nType \"help\" for help.\n\n");
+    printf("uffsdb (16.2).\nType \"help\" for help.\n\n");
     interface();
     return 0;
 }

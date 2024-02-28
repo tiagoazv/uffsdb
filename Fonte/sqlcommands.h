@@ -47,6 +47,14 @@ Lista *op_select(inf_select *);
    ---------------------------------------------------------------------------------------------*/
 int excluirTabela(char *);
 /* ----------------------------------------------------------------------------------------------
+    Objetivo:   Função para criação de índices para qualquer atributo de uma tabela.
+    Parametros: Estrutura do tipo rc_insert.
+    Retorno:    INT
+                SUCCESS,
+                ERRO_DE_PARAMETRO.
+   ---------------------------------------------------------------------------------------------*/
+int createIndex(rc_insert *);
+/* ----------------------------------------------------------------------------------------------
     Objetivo:   Copia todas as informações menos a tabela do objeto, que será removida.
     Parametros: Objeto que será removido do schema.
     Retorno:    INT
@@ -91,6 +99,7 @@ tp_table *abreTabela(char *, struct fs_objects *, tp_table **);
  *              e cria uma tabela no banco corrente
  */
 void createTable(rc_insert *);
+
 
 /*
   Objetivo: Verificar se a projeção feita no insert é válida

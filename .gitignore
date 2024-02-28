@@ -1,3 +1,7 @@
 prog
 *.dat
 *.o
+Fonte/uffsdb
+Fonte/interface/lex.yy.c
+Fonte/interface/y.tab.c
+Fonte/interface/y.tab.h

@@ -5,10 +5,11 @@
 #define FTYPES 1 // flag para identificar se types.h já foi incluída
 
 struct fs_objects { // Estrutura usada para carregar fs_objects.dat
-    char nome[TAMANHO_NOME_TABELA];     //  Nome da tabela.
-    int cod;                            // Código da tabela.
-    char nArquivo[TAMANHO_NOME_ARQUIVO];// Nome do arquivo onde estão armazenados os dados da tabela.
-    int qtdCampos;                      // Quantidade de campos da tabela.
+    char nome[TAMANHO_NOME_TABELA];      // Nome da tabela.
+    int cod;                             // Código da tabela.
+    char nArquivo[TAMANHO_NOME_ARQUIVO]; // Nome do arquivo onde estão armazenados os dados da tabela.
+    int qtdCampos;                       // Quantidade de campos da tabela.
+    int qtdIndice;						           // Quantidade de índices da tabela.
 };
 
 typedef struct tp_table{ // Estrutura usada para carregar fs_schema.dat

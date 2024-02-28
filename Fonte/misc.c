@@ -103,7 +103,8 @@ void contr() {
 	printf("\t Gabrielle Almeida de Souza e Lais Borin (14-1)\n");
 	printf("\t Natan J. Mai, Ricardo Zanuzzo, Rogerio T. Schmidt (14-2)\n");
 	printf("\t Igor Beilner, Eliton Traverssini, Régis T. Feyh (15-1)\n");
-	printf("\t Matheus A. V. Dall'Rosa (16-1)\n\n");
+  printf("\t Matheus A. V. Dall'Rosa (16-1)\n");
+	printf("\t Jefferson Coppini, Jonathan Rauber, Nicholas Brutti, Ricardo Müller (16-2)\n\n");
 }
 ////
 void help() {
@@ -132,6 +133,7 @@ void help() {
 	printf("\t\t\t\t\t\t  corresponder à quantidade de colunas da tabela.\n");
 	printf("\nSELECT * FROM NOME;\t\t\t\t- Não é a implementação padrão do SELECT mas serve para\n");
 	printf("\t\t\t\t\t\t  imprmir todos os valores de uma tabela\n");
+  printf("\nCREATE INDEX ON tabela (atributo);\t\t- Cria um índice B+ para o atributo especificado.\n");
 }
 ////
 int objcmp(char *obj, char *str) {

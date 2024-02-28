@@ -115,15 +115,6 @@ void freeTp_table(tp_table **, int );
 void freeTable(table *);
 void freeColumn(column *);
 
+void incrementaQtdIndice(char *nTabela);
 
-
-
-
-
-
-
-
-
-
-
-
+void adicionaBT(char *nomeTabela, char *nomeAtrib);
