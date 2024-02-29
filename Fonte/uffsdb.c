@@ -19,9 +19,6 @@
 #ifndef FDATABASE
    #include "database.h"
 #endif
-#ifndef FBTREE
-   #include "btree.h"
-#endif
 
 #include "interface/y.tab.h"
 

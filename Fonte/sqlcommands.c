@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "btree.h"
+////
+#ifndef FBTREE // includes only if this flag is not defined (preventing duplication)
+   #include "btree.h"
+#endif
 ////
 #ifndef FMACROS // garante que macros.h não seja reincluída
    #include "macros.h"
@@ -422,7 +425,8 @@ int finalizaInsert(char *nome, column *c){
 
 		if (auxT[t].chave == BT) {
 			char * nomeAtrib2;
-          ntuplas = ntuplas-1;
+            //ntuplas = ntuplas-1;
+            decnTuplas();
       		nomeAtrib2 = (char*)malloc((strlen(nome)+strlen(auxC->nomeCampo) + strlen(connected.db_directory))* sizeof(char));
       		strcpy(nomeAtrib2, connected.db_directory);
       		strcat(nomeAtrib2, nome);

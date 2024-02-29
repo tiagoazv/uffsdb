@@ -47,7 +47,7 @@ void destroi_arvore(nodo* n);
  * Retorna o nodo raiz da árvore. */
 nodo* constroi_bplus(char* nomeTabela);
 
-/* Snsere os dados do nodo folha no arquivo de indices da tabela. */
+/* Insere os dados do nodo folha no arquivo de indices da tabela. */
 void insere_arquivo(nodo* inicio, char* nomeTabela);
 
 /* Insere a chave (ind) e o endereço (end) no arquivo de indices. */
@@ -57,6 +57,13 @@ int buscaChaveBtree(nodo* raiz, char* ind);
 
 int calculaOrdem (int nTuplas);
 
-int ordem;
+void decnTuplas();
 
-int ntuplas;
+//#ifndef FBTREE  // declare the variables only if this flag is not defined (preventing duplication)
+//#define FBTREE 1  
+//    int ordem;
+//    int ntuplas;
+//#endif
+
+
+

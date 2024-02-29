@@ -103,7 +103,7 @@ void contr() {
 	printf("\t Gabrielle Almeida de Souza e Lais Borin (14-1)\n");
 	printf("\t Natan J. Mai, Ricardo Zanuzzo, Rogerio T. Schmidt (14-2)\n");
 	printf("\t Igor Beilner, Eliton Traverssini, Régis T. Feyh (15-1)\n");
-  printf("\t Matheus A. V. Dall'Rosa (16-1)\n");
+    printf("\t Matheus A. V. Dall'Rosa (16-1)\n");
 	printf("\t Jefferson Coppini, Jonathan Rauber, Nicholas Brutti, Ricardo Müller (16-2)\n\n");
 }
 ////
