@@ -150,6 +150,11 @@ void setColumnTypeCreate(char type){
 }
 
 void setColumnSizeCreate(char *size){
+  if(atoi(size) == 0){
+    printf("Invalid size for type VARCHAR. Size of Column must be greater than 0.\n");
+    GLOBAL_PARSER.noerror = 0;
+    return;
+  }
   GLOBAL_DATA.values[GLOBAL_PARSER.col_count-1] = realloc(GLOBAL_DATA.values[GLOBAL_PARSER.col_count-1], sizeof(char)*(strlen(size)+1));
   strcpy(GLOBAL_DATA.values[GLOBAL_PARSER.col_count-1], size);
   GLOBAL_DATA.values[GLOBAL_PARSER.col_count-1][strlen(size)] = '\0';
