@@ -88,6 +88,7 @@ typedef struct db_connected {
 
 typedef struct t_manager {
     int         t_running;      // Indica se existe uma transação em execução
+    int         t_error;        // Indica se ocorreu um erro dentro do bloco da transação
 }t_manager;
 
 // Union's utilizados na conversão de variáveis do tipo inteiro e double.

@@ -268,7 +268,7 @@ void beginTransaction(){
         return;
     }
 
-    printf(TRANSACTION.t_running);
+    printf("BEGIN\n");
     TRANSACTION.t_running = 1;
  
 }
@@ -280,8 +280,12 @@ void commitTransaction(){
     if(!TRANSACTION.t_running){
         printf("ERROR: There is no transaction running.\n");
         return;
+    } else if(TRANSACTION.t_error){
+        rollbackTransaction();
+        return;
     }
 
+    TRANSACTION.t_error = 0;
     printf("COMMIT\n");
 
 }
@@ -293,8 +297,12 @@ void endTransaction(){
     if(!TRANSACTION.t_running){
         printf("ERROR: There is no transaction running.\n");
         return;
+    } else if(TRANSACTION.t_error){
+        rollbackTransaction();
+        return;
     }
 
+    TRANSACTION.t_error = 0;
     printf("END\n");
     TRANSACTION.t_running = 0;
 
@@ -303,12 +311,14 @@ void endTransaction(){
 void rollbackTransaction(){
 
     GLOBAL_PARSER.consoleFlag = 1;
+    GLOBAL_PARSER.noerror = 1;
 
     if(!TRANSACTION.t_running){
         printf("ERROR: There is no transaction running.\n");
         return;
     }
 
+    TRANSACTION.t_error = 0;
     printf("ROLLBACK\n");
     TRANSACTION.t_running = 0;
 
@@ -337,79 +347,94 @@ int interface() {
         pthread_create(&pth, NULL, (void*)yyparse, &GLOBAL_PARSER);
         pthread_join(pth, NULL);
 
-        if (GLOBAL_PARSER.noerror) {
-            if (GLOBAL_PARSER.mode != 0) {
-                if (!connected.conn_active) {
-                    notConnected();
-                } else {
-                    switch(GLOBAL_PARSER.mode) {
-                        case OP_INSERT:
-                            if (GLOBAL_DATA.N > 0) {
-                                insert(&GLOBAL_DATA);
-                            }
-                            else
-                                printf("WARNING: Nothing to be inserted. Command ignored.\n");
-                            break;
-                        case OP_SELECT:
-                            resultado = op_select(&SELECT);
-                            if(resultado){
-                              printConsulta(SELECT.proj,resultado);
-                              resultado = NULL;
-                            }
-                            break;
-                        case OP_CREATE_TABLE:
-                            createTable(&GLOBAL_DATA);
-                            break;
-                        case OP_CREATE_DATABASE:
-                            createDB(GLOBAL_DATA.objName);
-                            break;
-                        case OP_DROP_TABLE:
-                            excluirTabela(GLOBAL_DATA.objName);
-                            break;
-                        case OP_DROP_DATABASE:
-                            dropDatabase(GLOBAL_DATA.objName);
-                            break;
-                        case OP_CREATE_INDEX:
-                            createIndex(&GLOBAL_DATA);
-                            break;
-                        default: break;
-                    }
-
-                }
-            }
-        } else {
+        if(TRANSACTION.t_running && TRANSACTION.t_error){
             GLOBAL_PARSER.consoleFlag = 1;
-            switch(GLOBAL_PARSER.mode) {
-                case OP_CREATE_DATABASE:
-                case OP_DROP_DATABASE:
-                case OP_CREATE_TABLE:
-                case OP_DROP_TABLE:
-                case OP_SELECT:
-                case OP_INSERT:
-                case OP_CREATE_INDEX:
-                    if (GLOBAL_PARSER.step == 1) {
-                        GLOBAL_PARSER.consoleFlag = 0;
-                        printf("Expected object name.\n");
+            printf("Current transaction was interrupted. Commands will be ignored until the end of the transaction block.\n");
+        } else {
+            if (GLOBAL_PARSER.noerror) {
+                if (GLOBAL_PARSER.mode != 0) {
+                    if (!connected.conn_active) {
+                        notConnected();
+                    } else {
+                        switch(GLOBAL_PARSER.mode) {
+                            case OP_INSERT:
+                                if (GLOBAL_DATA.N > 0) {
+                                    insert(&GLOBAL_DATA);
+                                }
+                                else
+                                    printf("WARNING: Nothing to be inserted. Command ignored.\n");
+                                break;
+                            case OP_SELECT:
+                                resultado = op_select(&SELECT);
+                                if(resultado){
+                                    printConsulta(SELECT.proj,resultado);
+                                    resultado = NULL;
+                                }
+                                break;
+                            case OP_CREATE_TABLE:
+                                createTable(&GLOBAL_DATA);
+                                break;
+                            case OP_CREATE_DATABASE:
+                                if(TRANSACTION.t_running){
+                                    printf("ERROR: CREATE DATABASE cannot be executed inside transaction block.\n");
+                                    TRANSACTION.t_error = 1;
+                                    break;
+                                }
+                                createDB(GLOBAL_DATA.objName);
+                                break;
+                            case OP_DROP_TABLE:
+                                excluirTabela(GLOBAL_DATA.objName);
+                                break;
+                            case OP_DROP_DATABASE:
+                                if(TRANSACTION.t_running){
+                                    printf("ERROR: DROP DATABASE cannot be executed inside transaction block.\n");
+                                    TRANSACTION.t_error = 1;
+                                    break;
+                                }
+                                dropDatabase(GLOBAL_DATA.objName);
+                                break;
+                            case OP_CREATE_INDEX:
+                                createIndex(&GLOBAL_DATA);
+                                break;
+                            default: break;
+                        }
                     }
-                break;
-
-                default: break;
-            }
-
-            if (GLOBAL_PARSER.mode == OP_CREATE_TABLE) {
-                if (GLOBAL_PARSER.step == 2) {
-                    printf("Column not specified correctly.\n");
-                    GLOBAL_PARSER.consoleFlag = 0;
                 }
-            } else if (GLOBAL_PARSER.mode == OP_INSERT) {
-                if (GLOBAL_PARSER.step == 2) {
-                    printf("Expected token \"VALUES\" after object name.\n");
-                    GLOBAL_PARSER.consoleFlag = 0;
-                }
-            }
+            } else {
+                GLOBAL_PARSER.consoleFlag = 1;
+                if(TRANSACTION.t_running) TRANSACTION.t_error = 1;
+                switch(GLOBAL_PARSER.mode) {
+                    case OP_CREATE_DATABASE:
+                    case OP_DROP_DATABASE:
+                    case OP_CREATE_TABLE:
+                    case OP_DROP_TABLE:
+                    case OP_SELECT:
+                    case OP_INSERT:
+                    case OP_CREATE_INDEX:
+                        if (GLOBAL_PARSER.step == 1) {
+                            GLOBAL_PARSER.consoleFlag = 0;
+                            printf("Expected object name.\n");
+                        }
+                    break;
 
-            printf("ERROR: syntax error.\n");
-            GLOBAL_PARSER.noerror = 1;
+                    default: break;
+                }
+
+                if (GLOBAL_PARSER.mode == OP_CREATE_TABLE) {
+                    if (GLOBAL_PARSER.step == 2) {
+                        printf("Column not specified correctly.\n");
+                        GLOBAL_PARSER.consoleFlag = 0;
+                    }
+                } else if (GLOBAL_PARSER.mode == OP_INSERT) {
+                    if (GLOBAL_PARSER.step == 2) {
+                        printf("Expected token \"VALUES\" after object name.\n");
+                        GLOBAL_PARSER.consoleFlag = 0;
+                    }
+                }
+
+                printf("ERROR: syntax error.\n");
+                GLOBAL_PARSER.noerror = 1;
+            }
         }
 
         if (GLOBAL_PARSER.mode != 0) {
