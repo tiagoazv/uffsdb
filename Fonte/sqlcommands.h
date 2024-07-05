@@ -10,7 +10,7 @@
 /* insert: Recebe uma estrutura rc_insert e valida os tokens encontrados pela interface().
  *         Se os valores forem válidos, insere um novo valor.
  */
-void insert(rc_insert *);
+int insert(rc_insert *);
 int allColumnsExists(rc_insert *, table *);
 char getInsertedType(rc_insert *, char *c, table *);
 char *getInsertedValue(rc_insert *, char *, table *);

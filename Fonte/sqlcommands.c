@@ -529,7 +529,7 @@ int finalizaInsert(char *nome, column *c){
 /* insert: Recebe uma estrutura rc_insert e valida os tokens encontrados pela interface().
  *         Se os valores forem válidos, insere um novo valor.
  */
-void insert(rc_insert *s_insert) {
+int insert(rc_insert *s_insert) {
 	int i;
 	table *tabela = (table *)malloc(sizeof(table));
 	tabela->esquema = NULL;
@@ -538,7 +538,7 @@ void insert(rc_insert *s_insert) {
 	tp_table *esquema = NULL;
 	struct fs_objects objeto;
 	memset(&objeto, 0, sizeof(struct fs_objects));
-	char  flag=0;
+	int  flag=0;
 
 	abreTabela(s_insert->objName, &objeto, &tabela->esquema); //retorna o esquema para a insere valor
 	strcpylower(tabela->nome, s_insert->objName);
@@ -593,6 +593,7 @@ void insert(rc_insert *s_insert) {
 	free(esquema);
 	freeColumn(colunas);
 	freeTable(tabela);
+  return flag;
 }
 
 //select * from t4;
@@ -666,7 +667,7 @@ int validaColsWhere(Lista *tok,column *colunas,int qtdColunas){
       for(int j = 0; !achou && j < qtdColunas; j++)
         achou = (strcmp(str,colunas[j].nomeCampo) == 0);
       if(!achou){
-        printf("A coluna %s não pertene a tabela.\n",str);
+        printf("A coluna %s não pertence a tabela.\n",str);
         return 0;
       }
     }

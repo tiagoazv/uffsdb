@@ -359,7 +359,7 @@ int interface() {
                         switch(GLOBAL_PARSER.mode) {
                             case OP_INSERT:
                                 if (GLOBAL_DATA.N > 0) {
-                                    insert(&GLOBAL_DATA);
+                                    TRANSACTION.t_error = insert(&GLOBAL_DATA);
                                 }
                                 else
                                     printf("WARNING: Nothing to be inserted. Command ignored.\n");
@@ -369,6 +369,8 @@ int interface() {
                                 if(resultado){
                                     printConsulta(SELECT.proj,resultado);
                                     resultado = NULL;
+                                } else {
+                                    TRANSACTION.t_error = 1;
                                 }
                                 break;
                             case OP_CREATE_TABLE:
