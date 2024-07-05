@@ -1204,4 +1204,5 @@ void createIndex(rc_insert *t) {
   printf("CREATE INDEX\n");
 }
 
+
 ///////

@@ -38,6 +38,9 @@ inf_select SELECT;
  */
 rc_parser GLOBAL_PARSER;
 
+//Estrutura para gerenciamento de transações
+t_manager TRANSACTION;
+
 void connect(char *nome) {
   int r = connectDB(nome);
 	if (r == SUCCESS) {
@@ -254,6 +257,61 @@ void clearGlobalStructs() {
     GLOBAL_PARSER.col_count         = 0;
     GLOBAL_PARSER.val_count         = 0;
     GLOBAL_PARSER.step              = 0;
+}
+
+void beginTransaction(){
+
+    GLOBAL_PARSER.consoleFlag = 1;
+
+    if(TRANSACTION.t_running){
+        printf("ERROR: There is already a transaction running.\n");
+        return;
+    }
+
+    printf(TRANSACTION.t_running);
+    TRANSACTION.t_running = 1;
+ 
+}
+
+void commitTransaction(){
+
+    GLOBAL_PARSER.consoleFlag = 1;
+
+    if(!TRANSACTION.t_running){
+        printf("ERROR: There is no transaction running.\n");
+        return;
+    }
+
+    printf("COMMIT\n");
+
+}
+
+void endTransaction(){
+
+    GLOBAL_PARSER.consoleFlag = 1;
+
+    if(!TRANSACTION.t_running){
+        printf("ERROR: There is no transaction running.\n");
+        return;
+    }
+
+    printf("END\n");
+    TRANSACTION.t_running = 0;
+
+}
+
+void rollbackTransaction(){
+
+    GLOBAL_PARSER.consoleFlag = 1;
+
+    if(!TRANSACTION.t_running){
+        printf("ERROR: There is no transaction running.\n");
+        return;
+    }
+
+    printf("ROLLBACK\n");
+    TRANSACTION.t_running = 0;
+
 }
 
 void setMode(char mode) {

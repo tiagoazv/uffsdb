@@ -126,3 +126,11 @@ void clearGlobalStructs();
  * dos tokens iniciais.
  */
 void setMode(char mode);
+
+void beginTransaction();
+
+void endTransaction();
+
+void commitTransaction();
+
+void rollbackTransaction();
