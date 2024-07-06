@@ -155,6 +155,7 @@ void setColumnTypeCreate(char type){
 void setColumnSizeCreate(char *size){
   if(atoi(size) == 0){
     printf("Invalid size for type VARCHAR. Size of Column must be greater than 0.\n");
+    if(TRANSACTION.t_running) TRANSACTION.t_error = 0;
     GLOBAL_PARSER.noerror = 0;
     return;
   }
@@ -270,10 +271,10 @@ void beginTransaction(){
 
     printf("BEGIN\n");
     TRANSACTION.t_running = 1;
- 
+
 }
 
-void commitTransaction(){
+void commitTransaction(int explicit){
 
     GLOBAL_PARSER.consoleFlag = 1;
 
@@ -281,12 +282,12 @@ void commitTransaction(){
         printf("ERROR: There is no transaction running.\n");
         return;
     } else if(TRANSACTION.t_error){
-        rollbackTransaction();
+        rollbackTransaction(1);
         return;
     }
 
     TRANSACTION.t_error = 0;
-    printf("COMMIT\n");
+    if(explicit) printf("COMMIT\n");
 
 }
 
@@ -298,7 +299,7 @@ void endTransaction(){
         printf("ERROR: There is no transaction running.\n");
         return;
     } else if(TRANSACTION.t_error){
-        rollbackTransaction();
+        rollbackTransaction(1);
         return;
     }
 
@@ -308,18 +309,19 @@ void endTransaction(){
 
 }
 
-void rollbackTransaction(){
+void rollbackTransaction(int explicit){
 
     GLOBAL_PARSER.consoleFlag = 1;
     GLOBAL_PARSER.noerror = 1;
 
+GLOBAL_PARSER.noerror = 1;
     if(!TRANSACTION.t_running){
         printf("ERROR: There is no transaction running.\n");
         return;
     }
 
     TRANSACTION.t_error = 0;
-    printf("ROLLBACK\n");
+    if(explicit) printf("ROLLBACK\n");
     TRANSACTION.t_running = 0;
 
 }
@@ -350,8 +352,9 @@ int interface() {
         if(TRANSACTION.t_running && TRANSACTION.t_error){
             GLOBAL_PARSER.consoleFlag = 1;
             printf("Current transaction was interrupted. Commands will be ignored until the end of the transaction block.\n");
+            GLOBAL_PARSER.noerror = 0;
         } else {
-            if (GLOBAL_PARSER.noerror) {
+            if (GLOBAL_PARSER.noerror){
                 if (GLOBAL_PARSER.mode != 0) {
                     if (!connected.conn_active) {
                         notConnected();
@@ -374,7 +377,7 @@ int interface() {
                                 }
                                 break;
                             case OP_CREATE_TABLE:
-                                createTable(&GLOBAL_DATA);
+                                TRANSACTION.t_error = createTable(&GLOBAL_DATA);
                                 break;
                             case OP_CREATE_DATABASE:
                                 if(TRANSACTION.t_running){
@@ -385,7 +388,7 @@ int interface() {
                                 createDB(GLOBAL_DATA.objName);
                                 break;
                             case OP_DROP_TABLE:
-                                excluirTabela(GLOBAL_DATA.objName);
+                                TRANSACTION.t_error = excluirTabela(GLOBAL_DATA.objName);
                                 break;
                             case OP_DROP_DATABASE:
                                 if(TRANSACTION.t_running){
@@ -396,7 +399,7 @@ int interface() {
                                 dropDatabase(GLOBAL_DATA.objName);
                                 break;
                             case OP_CREATE_INDEX:
-                                createIndex(&GLOBAL_DATA);
+                                TRANSACTION.t_error = createIndex(&GLOBAL_DATA);
                                 break;
                             default: break;
                         }

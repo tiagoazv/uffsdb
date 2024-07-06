@@ -1079,10 +1079,10 @@ int verifyFieldName(char **fieldName, int N){
 }
 
 //////
-void createTable(rc_insert *t) {
+int createTable(rc_insert *t) {
   if(strlen(t->objName) > TAMANHO_NOME_TABELA){
       printf("A table name must have no more than %d caracteres.\n",TAMANHO_NOME_TABELA);
-      return;
+      return 1;
   }
   int size;
   strcpylower(t->objName, t->objName);        //muda pra minúsculo
@@ -1094,7 +1094,7 @@ void createTable(rc_insert *t) {
   if(existeArquivo(tableName)){
     printf("ERROR: table already exist\n");
     free(tableName);
-    return;
+    return 1;
   }
 
   table *tab = NULL;
@@ -1102,7 +1102,7 @@ void createTable(rc_insert *t) {
   if(0 == verifyFieldName(t->columnName, t->N)){
     free(tableName);
     freeTable(tab);
-    return;
+    return 1;
   }
   int i;
   for(i = 0; i < t->N; i++){
@@ -1128,7 +1128,7 @@ void createTable(rc_insert *t) {
   		  printf("ERROR: attribute FK cannot be referenced\n");
         free(tableName);
         freeTable(tab);
-        return;
+        return 1;
       }
     }
   }
@@ -1147,15 +1147,20 @@ void createTable(rc_insert *t) {
   		}
   	}
   	printf("CREATE TABLE\n");
+    free(tableName);
+    if(tab != NULL) freeTable(tab);
   } else { //Tabela já existe, então não é preciso criar o índice b+.
 	  printf("ERROR: table already exist\n");
+    free(tableName);
+    if(tab != NULL) freeTable(tab);
+    return 1;
   }
 
-  free(tableName);
-  if(tab != NULL) freeTable(tab);
+
+  return SUCCESS;
 }
 
-void createIndex(rc_insert *t) {
+int createIndex(rc_insert *t) {
   struct fs_objects obj;
   struct tp_table   *tb;
   char dir[TAMANHO_NOME_TABELA + TAMANHO_NOME_ARQUIVO + TAMANHO_NOME_CAMPO + TAMANHO_NOME_INDICE];
@@ -1164,7 +1169,7 @@ void createIndex(rc_insert *t) {
 
   if (!verificaNomeTabela(t->objName)) {
     printf("ERROR: table \"%s\" does not exist.\n", t->objName);
-    return;
+    return 1;
   }
 
   obj = leObjeto(t->objName);
@@ -1174,7 +1179,7 @@ void createIndex(rc_insert *t) {
     if(strcmp(aux->nome, t->columnName[0]) == 0) { //Procura o atributo na tabela
       if(aux->chave == PK) {// Se o atributo é PK já possui índice criado automaticamente
         printf("ERROR: attribute \"%s\" already has a b+ index.\n", t->columnName[0]);
-        return;
+        return 1;
       }
       flag = 1;
     }
@@ -1182,7 +1187,7 @@ void createIndex(rc_insert *t) {
 
   if (!flag) {
     printf("ERROR: attribute \"%s\" does not exist on table %s.\n", t->columnName[0], t->objName);
-    return;
+    return 1;
   }
 
   strcpy(dir, connected.db_directory);
@@ -1192,7 +1197,7 @@ void createIndex(rc_insert *t) {
 
   if ((f = fopen(dir,"r")) != NULL){
     printf("ERROR: B+ index file already exists.\n");
-    return;
+    return 1;
   }
 
   strcpy(dir, connected.db_directory);
@@ -1203,6 +1208,8 @@ void createIndex(rc_insert *t) {
   incrementaQtdIndice(t->objName);
   adicionaBT(t->objName, t->columnName[0]);
   printf("CREATE INDEX\n");
+
+  return SUCCESS;
 }
 
 

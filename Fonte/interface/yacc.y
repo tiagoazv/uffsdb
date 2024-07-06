@@ -115,8 +115,8 @@ contributors: CONTR {contr(); GLOBAL_PARSER.consoleFlag = 1; return 0;}
 /*TRANSACTIONS*/
 transaction: BEGIN_T { beginTransaction(); return 0;};
             | END_T { endTransaction(); return 0;} 
-            | COMMIT_T { commitTransaction(); return 0;}
-            | ROLLBACK_T { rollbackTransaction(); return 0;}
+            | COMMIT_T { commitTransaction(1); return 0;}
+            | ROLLBACK_T { rollbackTransaction(1); return 0;}
             ;
 
 

@@ -9,6 +9,10 @@
 #endif
 /* insert: Recebe uma estrutura rc_insert e valida os tokens encontrados pela interface().
  *         Se os valores forem válidos, insere um novo valor.
+ * Modificada em 05/07/2024:
+ * Retorno: INT
+ *          1 (ERRO)
+ *          SUCCESS
  */
 int insert(rc_insert *);
 int allColumnsExists(rc_insert *, table *);
@@ -95,11 +99,15 @@ int iniciaAtributos(struct fs_objects *, tp_table **, tp_buffer **, char *);
     Retorno:    tp_table
    ---------------------------------------------------------------------------------------------*/
 tp_table *abreTabela(char *, struct fs_objects *, tp_table **);
+
 /* createTable: Recebe uma estrutura contendo os parâmetros do CREATE TABLE
  *              e cria uma tabela no banco corrente
+ * Modificada em 05/07/2024
+ * Retorno: INT
+ *          1 (ERRO)
+ *          SUCCESS
  */
-void createTable(rc_insert *);
-
+int createTable(rc_insert *);
 
 /*
   Objetivo: Verificar se a projeção feita no insert é válida
