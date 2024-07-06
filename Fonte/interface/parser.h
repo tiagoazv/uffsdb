@@ -131,6 +131,6 @@ void beginTransaction();
 
 void endTransaction();
 
-void commitTransaction();
+void commitTransaction(int explicit);
 
-void rollbackTransaction();
+void rollbackTransaction(int explicit);

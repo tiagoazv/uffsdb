@@ -42,6 +42,7 @@ rc_parser GLOBAL_PARSER;
 t_manager TRANSACTION;
 
 void connect(char *nome) {
+  if(TRANSACTION.t_running) rollbackTransaction(1);
   int r = connectDB(nome);
 	if (r == SUCCESS) {
     connected.db_name = malloc(sizeof(char)*((strlen(nome)+1)));
@@ -269,8 +270,8 @@ void beginTransaction(){
         return;
     }
 
-    printf("BEGIN\n");
     TRANSACTION.t_running = 1;
+    printf("BEGIN\n");
 
 }
 
@@ -287,6 +288,7 @@ void commitTransaction(int explicit){
     }
 
     TRANSACTION.t_error = 0;
+    TRANSACTION.t_running = 0;
     if(explicit) printf("COMMIT\n");
 
 }
@@ -303,9 +305,8 @@ void endTransaction(){
         return;
     }
 
-    TRANSACTION.t_error = 0;
+    commitTransaction(0);
     printf("END\n");
-    TRANSACTION.t_running = 0;
 
 }
 
@@ -314,15 +315,14 @@ void rollbackTransaction(int explicit){
     GLOBAL_PARSER.consoleFlag = 1;
     GLOBAL_PARSER.noerror = 1;
 
-GLOBAL_PARSER.noerror = 1;
     if(!TRANSACTION.t_running){
         printf("ERROR: There is no transaction running.\n");
         return;
     }
 
     TRANSACTION.t_error = 0;
-    if(explicit) printf("ROLLBACK\n");
     TRANSACTION.t_running = 0;
+    if(explicit) printf("ROLLBACK\n");
 
 }
 

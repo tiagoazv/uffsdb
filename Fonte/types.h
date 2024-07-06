@@ -91,6 +91,11 @@ typedef struct t_manager {
     int         t_error;        // Indica se existe um erro dentro do bloco da transação
 }t_manager;
 
+typedef struct transaction_log {
+    int     t_id;
+
+} transaction;
+
 // Union's utilizados na conversão de variáveis do tipo inteiro e double.
 
 union c_double{

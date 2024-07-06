@@ -33,7 +33,7 @@
     Objetivo:   Recebe o nome de uma tabela e engloba as funções leObjeto() e leSchema().
     Parametros: Nome da Tabela, Objeto da Tabela e tabela.
     Retorno:    tp_table
-   ---------------------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------------------------*/
 tp_table *abreTabela(char *nomeTabela, struct fs_objects *objeto, tp_table **tabela) {
     *objeto     = leObjeto(nomeTabela);
     *tabela     = leSchema(*objeto);
@@ -95,7 +95,7 @@ char *getInsertedValue(rc_insert *s_insert, char *columnName, table *tabela) {
     Retorno:    INT
                 SUCCESS,
                 ERRO_DE_PARAMETRO,
-   ---------------------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------------------------*/
 
 int iniciaAtributos(struct fs_objects *objeto, tp_table **tabela, tp_buffer **bufferpool, char *nomeT){
     *objeto     = leObjeto(nomeT);
@@ -130,7 +130,7 @@ int verifyFK(char *tableName, char *column){
                 SUCCESS,
                 ERRO_DE_PARAMETRO,
                 ERRO_CHAVE_ESTRANGEIRA
-   ---------------------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------------------------*/
 
 int verificaChaveFK(char *nomeTabela,column *c, char *nomeCampo, char *valorCampo, char *tabelaApt, char *attApt){
     int x,j, erro, page;
@@ -222,7 +222,7 @@ int verificaChaveFK(char *nomeTabela,column *c, char *nomeCampo, char *valorCamp
                 SUCCESS,
                 ERRO_DE_PARAMETRO,
                 ERRO_CHAVE_PRIMARIA
-   ---------------------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------------------------*/
 int verificaChavePK(char *nomeTabela, column *c, char *nomeCampo, char *valorCampo) {
     int j, x, erro, page;
     column *pagina = NULL;
