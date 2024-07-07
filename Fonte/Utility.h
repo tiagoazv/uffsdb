@@ -52,7 +52,7 @@ Nodo *busca(Lista *,void *inf);
 
 typedef struct Pilha{
   int tam;
-  Nodo *topo;
+  Nodo *topo, *fundo;
 }Pilha;
 
 /*

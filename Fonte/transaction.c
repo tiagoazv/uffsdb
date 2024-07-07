@@ -74,6 +74,12 @@ void add_op(Pilha *stack_log, int op, rc_insert* data){
 
 void debug_stack_log(Pilha *stack_log){
 
+
+    if(stack_log->topo == NULL) {
+        printf("Stack is empty\n");
+        return;
+    }
+
     printf("DEBUGGING:\n\n");
 
     while(stack_log->tam > 0){

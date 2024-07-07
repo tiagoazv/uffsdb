@@ -79,10 +79,11 @@ Pilha *novaPilha(){
   Pilha *p = malloc(sizeof(Pilha));
   p->tam = 0;
   p->topo = NULL;
+  p->fundo = NULL;
   return p;
 }
 
-void push(Pilha *p,void *inf){
+void push(Pilha *p, void *inf){
   Nodo *novo = novoNodo(inf);
   if(p->topo){
     p->topo->ant = novo;
@@ -90,6 +91,9 @@ void push(Pilha *p,void *inf){
   }
   p->topo = novo;
   p->tam++;
+  if(p->tam == 1){
+    p->fundo = p->topo;
+  }
 }
 
 void *pop(Pilha *p){
@@ -97,6 +101,7 @@ void *pop(Pilha *p){
   void *inf = k->inf;
   p->topo = k->prox;
   if(p->topo) p->topo->ant = NULL;
+  else p->fundo = NULL;
   p->tam--;
   free(k);
   return inf;
