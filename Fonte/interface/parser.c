@@ -23,7 +23,9 @@
 #ifndef FPARSER
    #include "parser.h"
 #endif
-
+#ifndef FTRANSACTION
+    #include "../transaction.h"
+#endif
 /* Estrutura global que guarda as informações obtidas pelo yacc
  * na identificação dos tokens
  */
@@ -39,7 +41,7 @@ inf_select SELECT;
 rc_parser GLOBAL_PARSER;
 
 //Estrutura para gerenciamento de transações
-t_manager TRANSACTION;
+t_control TRANSACTION;
 
 void connect(char *nome) {
   if(TRANSACTION.t_running) rollbackTransaction(1);
@@ -270,6 +272,7 @@ void beginTransaction(){
         return;
     }
 
+    TRANSACTION.STACK_LOG = novaPilha();
     TRANSACTION.t_running = 1;
     printf("BEGIN\n");
 
@@ -286,6 +289,8 @@ void commitTransaction(int explicit){
         rollbackTransaction(1);
         return;
     }
+
+    debug_stack_log(TRANSACTION.STACK_LOG);
 
     TRANSACTION.t_error = 0;
     TRANSACTION.t_running = 0;
@@ -319,6 +324,8 @@ void rollbackTransaction(int explicit){
         printf("ERROR: There is no transaction running.\n");
         return;
     }
+
+    debug_stack_log(TRANSACTION.STACK_LOG);
 
     TRANSACTION.t_error = 0;
     TRANSACTION.t_running = 0;
@@ -363,6 +370,9 @@ int interface() {
                             case OP_INSERT:
                                 if (GLOBAL_DATA.N > 0) {
                                     TRANSACTION.t_error = insert(&GLOBAL_DATA);
+                                    if(TRANSACTION.t_running && !TRANSACTION.t_error) {
+                                        add_op(TRANSACTION.STACK_LOG, GLOBAL_PARSER.mode, &GLOBAL_DATA);
+                                    }
                                 }
                                 else
                                     printf("WARNING: Nothing to be inserted. Command ignored.\n");
@@ -378,6 +388,9 @@ int interface() {
                                 break;
                             case OP_CREATE_TABLE:
                                 TRANSACTION.t_error = createTable(&GLOBAL_DATA);
+                                if(TRANSACTION.t_running && !TRANSACTION.t_error) {
+                                    add_op(TRANSACTION.STACK_LOG, GLOBAL_PARSER.mode, &GLOBAL_DATA);
+                                }
                                 break;
                             case OP_CREATE_DATABASE:
                                 if(TRANSACTION.t_running){
@@ -389,6 +402,9 @@ int interface() {
                                 break;
                             case OP_DROP_TABLE:
                                 TRANSACTION.t_error = excluirTabela(GLOBAL_DATA.objName);
+                                if(TRANSACTION.t_running && !TRANSACTION.t_error) {
+                                    add_op(TRANSACTION.STACK_LOG, GLOBAL_PARSER.mode, &GLOBAL_DATA);
+                                }
                                 break;
                             case OP_DROP_DATABASE:
                                 if(TRANSACTION.t_running){
@@ -400,6 +416,9 @@ int interface() {
                                 break;
                             case OP_CREATE_INDEX:
                                 TRANSACTION.t_error = createIndex(&GLOBAL_DATA);
+                                if(TRANSACTION.t_running && !TRANSACTION.t_error) {
+                                    add_op(TRANSACTION.STACK_LOG, GLOBAL_PARSER.mode, &GLOBAL_DATA);
+                                }
                                 break;
                             default: break;
                         }

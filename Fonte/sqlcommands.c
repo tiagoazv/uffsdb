@@ -1099,6 +1099,9 @@ int createTable(rc_insert *t) {
 
   table *tab = NULL;
   tab = iniciaTabela(t->objName);    //cria a tabela
+
+  
+
   if(0 == verifyFieldName(t->columnName, t->N)){
     free(tableName);
     freeTable(tab);

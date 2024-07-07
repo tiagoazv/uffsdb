@@ -1,10 +1,7 @@
 #define FTRANSACTION 1 //Flag para não reinclusão
 
-#ifndef FMACROS // garante que macros.h não seja reincluída
-   #include "macros.h"
-#endif
-///
-#ifndef FTYPES // garante que types.h não seja reincluída
-  #include "types.h"
-#endif
+void copy_data(rc_insert *data, rc_insert *copy);
 
+void add_op(Pilha *stack_log, int op, rc_insert* data);
+
+void debug_stack_log(Pilha *stack_log);

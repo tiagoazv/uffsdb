@@ -86,15 +86,17 @@ typedef struct db_connected {
     int conn_active;
 }db_connected;
 
-typedef struct t_manager {
+typedef struct t_control {
     int         t_running;      // Indica se existe uma transação em execução
     int         t_error;        // Indica se existe um erro dentro do bloco da transação
-}t_manager;
+    Pilha*      STACK_LOG;      // Pilha de Logs da transação em execução
+}t_control;
 
-typedef struct transaction_log {
-    int     t_id;
-
-} transaction;
+typedef struct log_op {
+    int         op;
+    rc_insert   data;
+    void*       t_info;
+} log_op;
 
 // Union's utilizados na conversão de variáveis do tipo inteiro e double.
 
