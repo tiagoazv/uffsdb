@@ -106,3 +106,38 @@ void debug_stack_log(Pilha *stack_log){
         }
     }
 }
+
+void rollback(Pilha* stack_log){
+
+    while(stack_log->tam > 0){
+
+        log_op *log = pop(stack_log);
+        rc_insert *aux = &log->data;
+
+        switch(log->op){
+            
+            case OP_CREATE_TABLE:
+                //drop table
+                printf("Create Table: %s\n", aux->objName);
+            break;
+            
+            case OP_DROP_TABLE:
+                //voltar a tabela
+                printf("Drop Table: %s\n", aux->objName);
+            break;
+
+            case OP_INSERT:
+                //remover inserção?
+                printf("Insert Table: %s\n", aux->objName);
+            break;
+
+            case OP_CREATE_INDEX:
+                //drop indice
+                printf("Create Index: %s\n", aux->objName);
+            break;
+
+            default: break;
+
+        }
+    }
+}
