@@ -291,6 +291,7 @@ void commitTransaction(int explicit){
     }
 
     debug_stack_log(TRANSACTION.STACK_LOG);
+    free(TRANSACTION.STACK_LOG);
 
     TRANSACTION.t_error = 0;
     TRANSACTION.t_running = 0;
@@ -326,6 +327,7 @@ void rollbackTransaction(int explicit){
     }
 
     debug_stack_log(TRANSACTION.STACK_LOG);
+    free(TRANSACTION.STACK_LOG);
 
     TRANSACTION.t_error = 0;
     TRANSACTION.t_running = 0;
