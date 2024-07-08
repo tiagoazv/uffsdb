@@ -667,8 +667,8 @@ column *insereValor(table  *tab, column *c, char *nomeCampo, char *valorCampo) {
                  * Verifica se o nome do campo ultrapassa o limite, se sim trunca
                  */
                 if (n > TAMANHO_NOME_CAMPO) {
-                   n = TAMANHO_NOME_CAMPO;
-                   printf("WARNING: field name exceeded the size limit and was truncated.\n");
+                    n = TAMANHO_NOME_CAMPO;
+                    printf("WARNING: field name exceeded the size limit and was truncated.\n");
                 }
 
                 strncpylower(e->nomeCampo, nomeCampo, n-1);
@@ -759,7 +759,7 @@ void printTable(char *tbl){
 		memset(fkTable 	, 0, objeto1.qtdCampos);
 		memset(fkColumn , 0, objeto1.qtdCampos);
 		memset(refColumn, 0, objeto1.qtdCampos);
-    memset(btIndex, 0, objeto1.qtdIndice);
+        memset(btIndex, 0, objeto1.qtdIndice);
 
 		int i;
 		for(i=0; i<objeto1.qtdCampos; i++) {
@@ -898,7 +898,7 @@ void adicionaBT(char *nomeTabela, char *nomeAtrib) {
       fseek(schema, -1, 1);
 
       if(fread(&cod, sizeof(int), 1, schema)){ // Le o codigo da tabela.
-          if(cod == objeto.cod){ // Verifica se o campo a ser copiado e da tabela que esta na estrutura fs_objects.
+          if(cod == objeto.cod){ // Verifica se o campo a ser copiado eh da tabela que esta na estrutura fs_objects.
               fread(atrib, sizeof(char), TAMANHO_NOME_CAMPO, schema);
               if(strcmp(atrib, nomeAtrib) == 0) {
                 //Pula até a posição de tp_table.chave (1B do tipo e 4B do tam)
